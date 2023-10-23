@@ -5,7 +5,7 @@ file = "Cylinder.vtu"
 # Create a 3D mesh (example: a cylinder)
 cylinder = vtk.vtkCylinderSource()
 cylinder.SetResolution(40)
-cylinder.SetHeight(3.0)
+cylinder.SetHeight(4.0)
 cylinder.SetRadius(1.0)
 
 triangle_filter = vtk.vtkTriangleFilter()
