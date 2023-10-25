@@ -7,7 +7,7 @@ import sys
 sys.path.append('.')# one directory up
 import numpy as np
 
-from tools.rotations import Euler2Rotation
+from tools.rotations import Euler2Rotation, Quaternion2Rotation
 from tools.loadVTU import loadVTU
 import meshio
 
@@ -39,15 +39,13 @@ class Animation():
             position_north, # position north
             position_east, # position east
             position_down, # position down
-            phi, # roll angle
-            theta, # pitch angle
-            psi, # yaw angle
+            quaternion
         ):
         plot_points = []
         
         shift = np.array([position_north, position_east, position_down])
         
-        R = Euler2Rotation(phi,theta,psi) # transformation matrix from body to vehicle frame
+        R = Quaternion2Rotation(quaternion)
         
         shift = self.R_plot @ shift
         self.centroid = shift
@@ -64,32 +62,20 @@ class Animation():
             position_north, # position north
             position_east, # position east
             position_down, # position down
-            u, # velocity measured along i body
-            v, # velocity measured along j body
-            w, # velocity measured along k body
-            phi, # roll angle
-            theta, # pitch angle
-            psi, # yaw angle
-            p, # roll rate measured along i body
-            q, # pitch rate measured along j body
-            r # yaw rate measured along k body
+            quaternion
         ):
         # draw plot elements: cart, bob, rod
-        self.drawObject(position_north, position_east, position_down, phi, theta, psi)
-        #self.updateIndicators(position_north, position_east, position_down, phi, theta, psi)
+        self.drawObject(position_north, position_east, position_down, quaternion)
 
 
     def drawObject(self, 
             position_north, # position north
             position_east, # position east
             position_down, # position down
-            phi, # roll angle
-            theta, # pitch angle
-            psi, # yaw angle
+            quaternion
         ):
         
-        verts=self.vertices(position_north, position_east, position_down, phi, theta, psi)
-        print(verts[0])
+        verts=self.vertices(position_north, position_east, position_down, quaternion)
         meshio.write_points_cells(
             f"{self.name}_t{self.count}.vtu",
             verts,
