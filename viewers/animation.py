@@ -29,9 +29,9 @@ class Animation():
 
         # rotate for plotting north=x east=y h=-z
         self.R_plot=np.array([
-                [0, 1, 0],
                 [1, 0, 0],
-                [0, 0, -1]
+                [0, 1, 0],
+                [0, 0, 1]
         ]) # for plotting's sake
 
         
