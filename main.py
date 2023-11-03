@@ -8,6 +8,7 @@ import parameters.simulation_parameters as SIM
 from viewers.animation                  import Animation
 from viewers.dataPlotter                import DataPlotter
 
+
 make_output        = 1
 show_figures       = 0
 include_animation  = 0
