@@ -134,3 +134,4 @@ class makeSimpleMeshes:
         # Start the rendering loop
         renderWindow.Render()
         renderWindowInteractor.Start()
+        print("here")
