@@ -4,7 +4,7 @@ import matplotlib.patches as mpatches
 from collections import OrderedDict
 from math import degrees
 import numpy as np
-import json
+import json, re
 
 plt.ion()  # enable interactive drawing
 
@@ -14,7 +14,7 @@ def wrapString(s):
 class DataPlotter:
     special_words       = ["phi", "theta", "psi", "alpha", "beta", "delta", "Omega"]
 
-    inputs = ["Port_Canard_Angle", "Starboard_Canard_Angle", "Port_Fin_Angle", "Starboard_Fin_Angle", "Thrust", "Omega_in", "Omega_out"]
+    inputs = ["Port Canard Angle", "Starboard Canard Angle", "Port Fin Angle", "Starboard Fin Angle", "Thrust", "Omega_in", "Omega_out"]
     inputs_lengths = np.zeros(len(inputs)).tolist()
 
     vars                = ["p_n", "p_e", "p_d", "u", "v", "w", "phi", "theta", "psi", "p", "q", "r", "f_x", "f_y", "f_z", "l", "m", "n"]
@@ -68,12 +68,12 @@ class DataPlotter:
             for i in range(len(self.vars)):
                 # if self.vars_lengths[i]:
                 #     plt.legend(self.dimension_names[:self.vars_lengths[i]])
-                self.axes[i].set_ylabel(f"$\\{self.vars[i]}$" if self.vars[i] in self.special_words else f"${self.vars[i]}$")
+                self.axes[i].set_ylabel(self.formatStringForLatex(self.vars[i]))
 
             for i in range(len(self.inputs)):
                 # if self.inputs_lengths[i]:
                 #     plt.legend(self.dimension_names[:self.inputs_lengths[i]])
-                self.dashboard[i].set_ylabel(f"$\\{self.inputs[i]}$" if self.inputs[i][:self.inputs[i].find("_")] in self.special_words else f"${self.inputs[i]}$")
+                self.dashboard[i].set_ylabel(self.formatStringForLatex(self.inputs[i]))
 
             # Create a figure and axis
             if sum(self.inputs_lengths + self.vars_lengths):
@@ -99,6 +99,13 @@ class DataPlotter:
             self.fig.tight_layout()
             self.fig.subplots_adjust(hspace=0.06)
 
+
+        for i in range(len(self.vars)):
+            self.vars[i] = re.sub("\s+", "_", self.vars[i])
+
+        for i in range(len(self.inputs)):
+            self.inputs[i] = re.sub("\s+", "_", self.inputs[i])
+
         self.t = []
         lengths = self.vars_lengths+self.inputs_lengths
         for i, var in enumerate(self.vars+self.inputs):
@@ -107,6 +114,22 @@ class DataPlotter:
                     exec(f"self.{var}_{self.dimension_names[j]} = []")
             else:
                 exec(f"self.{var} = []")
+
+    def formatStringForLatex(self, s:str):
+        components = re.split(r"\s+", s)
+        for j, item in enumerate(components):
+            underscores = re.split(r"_+", item)
+            for i, name in enumerate(underscores):
+                if name in self.special_words:
+                    underscores[i] = f"\\{name}"
+                else:
+                    underscores[i] = f"\\text{{{name}}}"
+            components[j] = "_{".join(underscores) + "}"*(len(underscores)-1)
+        return "$" + "\;".join(components) + "$"
+
+            
+            
+                
 
 
     def createPlot(self):

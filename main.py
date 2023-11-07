@@ -12,8 +12,8 @@ from viewers.dataPlotter                import DataPlotter
 make_output        = 1
 show_figures       = 0
 include_animation  = 1
-include_plotter    = 1
-write_data_to_file = 0
+include_plotter    = 0
+write_data_to_file = 1
 
 
 if include_animation:
