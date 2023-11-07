@@ -2,7 +2,7 @@ from tools.rotations import Euler2Quaternion
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np
-from mayavi import mlab
+import platform, os
 
 import parameters.simulation_parameters as SIM
 from viewers.animation                  import Animation
@@ -11,14 +11,21 @@ from viewers.dataPlotter                import DataPlotter
 
 make_output        = 1
 show_figures       = 0
-include_animation  = 0
-include_plotter    = 0
-write_data_to_file = 1
+include_animation  = 1
+include_plotter    = 1
+write_data_to_file = 0
 
 
 if include_animation:
     # read mesh and oriente along x-axis, that is what the scale matrix does
-    animation = Animation("meshes/Body.vtu", scale=np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]]))
+    animation = Animation(
+        file="meshes/Body.vtu",
+        scale=np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]]), 
+        interactive=show_figures,
+        write_meshes=False,
+        width=SIM.fig_width,
+        height=SIM.fig_height
+    )
 
 if include_plotter or write_data_to_file:
     plotter = DataPlotter(width=SIM.fig_width, height=SIM.fig_height, plot=include_plotter)
@@ -49,12 +56,13 @@ while t < SIM.end_time:
 
     # plotting the state variables and forces with respect to time
     if include_plotter or write_data_to_file:
-        plotter.update(t, t, t**(1/2))
+        plotter.update(t, np.ones(18), np.ones(7))
 
     # saving image of figure if on a valid timestep
     if include_plotter and make_output:
-        plotter.savefig(SIM.output_plot_file_format.format(num=count))
-
+        plotter.savefig(SIM.output_plot_file_format.format(num=count), SIM.input_plot_file_format.format(num=count))
+    if include_animation and make_output:
+        animation.savefig(SIM.animation_file_format.format(num=count))
     if show_figures:
         plt.pause(0.001) # allows animation to draw
 
@@ -65,5 +73,42 @@ while t < SIM.end_time:
     print(round(t, 6), "/", SIM.end_time, end="      \r")
 print()
 
-if write_data_to_file:
-    plotter.saveData(SIM.data_file)
+if write_data_to_file: plotter.saveData(SIM.data_file)
+
+if "linux" in platform.system().lower():
+    if (include_animation or include_plotter) and make_output:
+        # makes a video from the saved images
+        #print((f"convert {animation_file_format} {plot_file_format} +append {combined_file_format}").format(num="*"))
+        #exit()
+        if include_plotter:
+            if include_animation:
+                for i in range(count):
+                    # print(i)
+                    # print((f"convert {animation_file_format} {plot_file_format} +append {combined_file_format}").format(num=i))
+                    os.system((f"convert {SIM.animation_file_format} {SIM.input_plot_file_format} -append {SIM.intermediate_file_format}").format(num=i))
+                    os.system(f"rm {SIM.animation_file_format} {SIM.input_plot_file_format}".format(num=i))
+                
+                for i in range(count):
+                    # print(i)
+                    # print((f"convert {animation_file_format} {plot_file_format} +append {combined_file_format}").format(num=i))
+                    os.system((f"convert {SIM.intermediate_file_format} {SIM.output_plot_file_format} +append {SIM.combined_file_format}").format(num=i))
+                    os.system(f"rm {SIM.intermediate_file_format} {SIM.output_plot_file_format}".format(num=i))
+            else:
+                for i in range(count):
+                    os.system((f"convert {SIM.output_plot_file_format} {SIM.input_plot_file_format} -append {SIM.combined_file_format}").format(num=i))
+                    os.system(f"rm {SIM.output_plot_file_format} {SIM.input_plot_file_format}".format(num=i))
+                    
+
+        else:
+            if include_animation:
+                for i in range(count):
+                    os.system(f"mv {SIM.animation_file_format} {SIM.combined_file_format}".format(num=i))
+
+        os.system((f"ffmpeg -framerate {SIM.video_framerate} -i {SIM.combined_file_format} -c:v libx264 -r 30 -vf \"pad=ceil(iw/2)*2:ceil(ih/2)*2\" -y {SIM.video_file_name()}").format(num="%d"))
+
+        for i in range(count):
+            os.system(f"rm {SIM.combined_file_format}".format(num=i))
+        
+        plt.close()
+else:
+    print("Can not render video on non-linux machines, use the standalone data plotter in tools")

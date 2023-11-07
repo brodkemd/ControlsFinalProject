@@ -3,41 +3,49 @@ sys.path.append('.')# one directory up
 import numpy as np
 
 from tools.rotations import Euler2Rotation, Quaternion2Rotation
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from tools.loadVTU import loadVTU
 import meshio
-from mayavi import mlab
+import matplotlib.pyplot as plt
 
 
 class Animation():
-
     centroid = []
     trail_points = []
 
     points    = []
     triangles = []
 
-    show_trail = False
     interactive = False
     write_meshes = False
-    fig = None
 
-    def __init__(self, file:str, scale:np.ndarray=np.eye(3), shift:np.ndarray=np.zeros(3), name="animation", interactive=False, write_meshes=True):
+    def __init__(self, file:str, scale:np.ndarray=np.eye(3), shift:np.ndarray=np.zeros(3), name="animation", interactive=False, write_meshes=True, width=10, height=9):
         print("\nAnimation:")
         self.count = 0
         self.name = name
+
+        self.fig = plt.figure(figsize=(width, height))
+        self.ax:plt.Axes = self.fig.add_subplot(1, 1, 1, projection='3d')
+
+        self.ax.set_ylabel('North(m)')
+        self.ax.set_xlabel('East(m)')
+        self.ax.set_zlabel('Height(m)')
+
         self.createObject(file, scale, shift)
 
 
-        # rotate for plotting north=x east=y h=-z
+        self.fig.tight_layout()
+
+        # rotate for plotting north=x east=y h=z
         self.R_plot=np.array([
-                [1, 0, 0],
                 [0, 1, 0],
+                [1, 0, 0],
                 [0, 0, 1]
         ]) # for plotting's sake
 
-        self.interactive = False# interactive
+        self.interactive = interactive
         self.write_meshes = write_meshes
-        self.init = False
+        self.init = True
 
         print("  Rendering Setup:")
         print("    interactive:", self.interactive)
@@ -77,6 +85,9 @@ class Animation():
         # draw plot elements: cart, bob, rod
         self.drawObject(position_north, position_east, position_down, quaternion)
 
+        # Set initialization flag to False after first call
+        if self.init:
+            self.init = False
 
 
     def drawObject(self, 
@@ -94,14 +105,24 @@ class Animation():
                 verts,
                 {"triangle" : self.triangles}
             )
-        # if self.interactive:
-        #     self.fig.mlab_source.set(x=self.points[:,0])
-        #     self.fig.mlab_source.set(y=self.points[:,1])
-        #     self.fig.mlab_source.set(z=self.points[:,2])
-        #     self.fig.draw()
+            self.count += 1
 
-        self.count += 1
+        buffer = 30
+        self.ax.set_xlim([-buffer + self.centroid[0], buffer + self.centroid[0]])
+        self.ax.set_ylim([-buffer + self.centroid[1], buffer + self.centroid[1]])
+        self.ax.set_zlim([-buffer + self.centroid[2], buffer + self.centroid[2]])
+        
+        plot_points = []
+        for i in range(len(self.triangles)):
+            plot_points.append([])
+            for j in range(3):
+                plot_points[-1].append((verts[self.triangles[i][j]]).tolist())
 
+        if self.init:
+            poly = Poly3DCollection(plot_points, alpha=1.0)
+            self.cube =self.ax.add_collection3d(poly)#
+        else:
+            self.cube.set_verts(plot_points)
 
     def createObject(self, file:str, scale, shift):
         self.points, self.triangles = loadVTU(file)
@@ -116,7 +137,7 @@ class Animation():
 
 
     def analyze(self):
-        round_to = 4
+        round_to = 8
         x_diff = max(self.points[:,0]) - min(self.points[:,0])
         y_diff = max(self.points[:,1]) - min(self.points[:,1])
         z_diff = max(self.points[:,2]) - min(self.points[:,2])
@@ -142,8 +163,35 @@ class Animation():
         print(space+"    - max z:", round(max(self.points[:,2]), round_to))
         print(space+"    - min z:", round(min(self.points[:,2]), round_to))
         print(space+"    - z spread:", round(z_diff, round_to))
-        
 
+        x_c, y_c, z_c = self.computeCentroid()
+
+        print(space+"Centroid:")
+        print(space+"  - x:", round(x_c, round_to))
+        print(space+"  - y:", round(y_c, round_to))
+        print(space+"  - z:", round(z_c, round_to))
+        print(space+"Normalizing about centroid:", end=" ")
+        self.normalizeAboutCentriod()
+        print("done")
+        x_c, y_c, z_c = self.computeCentroid()
+        print(space+"New Centroid:")
+        print(space+"  - x:", round(x_c, round_to))
+        print(space+"  - y:", round(y_c, round_to))
+        print(space+"  - z:", round(z_c, round_to))
+
+
+    def computeCentroid(self):
+        # assumes constant density, so just average the points
+        x_c = np.average(self.points[:,0])
+        y_c = np.average(self.points[:,1])
+        z_c = np.average(self.points[:,2])
+        self.centroid = [x_c, y_c, z_c]
+        return x_c, y_c, z_c
+
+
+    def normalizeAboutCentriod(self):
+        for i in range(3):
+            self.points[:,i] = self.points[:,i] - self.centroid[i]
 
 
     def savefig(self, file, *args, **kwargs):

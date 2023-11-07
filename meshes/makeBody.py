@@ -1,22 +1,23 @@
 from tools.makeSimpleMeshes import makeSimpleMeshes as Mesher
 import os
 
-cwd = os.path.dirname(__file__)
-file = os.path.join(cwd, "Body.vtu")
-
-mesher = Mesher()
-
 radius      = 4
 tip_height  = 6
 body_height = 20
 resolution  = 20
 
-cone = mesher.cone(radius, tip_height, resolution)
-cone = mesher.transform(cone, 0, body_height/2+tip_height/2, 0, 0, 0, 90)
-cylinder = mesher.cylinder(radius, body_height, resolution)
-body = mesher.appendObjects(cone, cylinder)
-mesher.render(body)
-mesher.exportToVtu(file, body)
+if __name__ == "__main__":
+    cwd = os.path.dirname(__file__)
+    file = os.path.join(cwd, "Body.vtu")
+
+    mesher = Mesher()
+
+    cone = mesher.cone(radius, tip_height, resolution)
+    cone = mesher.transform(cone, 0, body_height/2+tip_height/2, 0, 0, 0, 90)
+    cylinder = mesher.cylinder(radius, body_height, resolution)
+    body = mesher.appendObjects(cone, cylinder)
+    mesher.render(body)
+    mesher.exportToVtu(file, body)
 
 
 # import vtk
