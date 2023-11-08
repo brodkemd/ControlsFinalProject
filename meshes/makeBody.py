@@ -16,8 +16,11 @@ if __name__ == "__main__":
     cone = mesher.transform(cone, 0, body_height/2+tip_height/2, 0, 0, 0, 90)
     cylinder = mesher.cylinder(radius, body_height, resolution)
     body = mesher.appendObjects(cone, cylinder)
-    mesher.render(body)
     mesher.exportToVtu(file, body)
+    mesher.exportToSTL(file[:file.rfind(".")+1] + "stl", body)
+
+    
+
 
 
 # import vtk

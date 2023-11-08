@@ -55,7 +55,25 @@ class makeSimpleMeshes:
         vtu_writer.Write()
 
         print(f"Mesh exported to \"{file}\" successfully.")
+    
 
+    def exportToSTL(self, file:str, obj):
+        triangle_filter = vtk.vtkTriangleFilter()
+        triangle_filter.SetInputData(obj)
+        triangle_filter.Update()
+
+        # Get points and cells from the mesh
+        mesh_polydata = triangle_filter.GetOutput()
+        points = mesh_polydata.GetPoints()
+
+        writer = vtk.vtkSTLWriter()
+        writer.SetInputData(mesh_polydata)
+        writer.SetFileName(file)
+
+        if writer.Write() == 1:
+            print(f"Mesh exported to \"{file}\" successfully.")
+        else:
+            raise Exception(f"failed to convert mesh")
 
     def cone(self, radius:float, height:float, resolution:int, center=(0, 0, 0)):
         # Create a cone source

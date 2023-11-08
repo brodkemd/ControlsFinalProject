@@ -188,6 +188,18 @@ class Animation():
         self.centroid = [x_c, y_c, z_c]
         return x_c, y_c, z_c
 
+    # def computeMoments(self):
+    #     theta = np.arange(0, np.pi/2, 0.1)
+    #     phi = np.arange(0, 2*np.pi, 0.1)
+
+    #     for i in range(len(theta)):
+    #         for j in range(len(phi)):
+    #             r = 1
+    #             vec = r*np.array([np.sin(theta[i])*np.cos(phi[j]), np.sin(theta[i])*np.sin(phi[i]), np.cos(theta[i])])
+
+
+
+
 
     def normalizeAboutCentriod(self):
         for i in range(3):
