@@ -7,6 +7,29 @@ import platform, os
 import parameters.simulation_parameters as SIM
 from viewers.animation                  import Animation
 from viewers.dataPlotter                import DataPlotter
+from dynamics.dynamics                  import Dynamics
+
+# use these euler angles to initial quaternion
+phi   = 0
+theta = 0
+psi   = 0
+
+# defining the initial state
+state = np.array([
+    0, # p_n
+    0, # p_e
+    0, # p_d
+    0, # u
+    0, # v
+    0, # w
+    Euler2Quaternion(phi, theta, psi).item(0), # e_0
+    Euler2Quaternion(phi, theta, psi).item(1), # e_1
+    Euler2Quaternion(phi, theta, psi).item(2), # e_2
+    Euler2Quaternion(phi, theta, psi).item(3), # e_3
+    0, # p
+    0, # q
+    0 # r
+], dtype=float)
 
 
 make_output        = 1
@@ -14,7 +37,6 @@ show_figures       = 0
 include_animation  = 1
 include_plotter    = 0
 write_data_to_file = 1
-
 
 if include_animation:
     # read mesh and oriente along x-axis, that is what the scale matrix does
@@ -35,6 +57,8 @@ if not show_figures:
     plt.close('all')
     mpl.use('Agg')
 
+dynamics = Dynamics(state)
+
 t = SIM.start_time
 inputs = np.zeros((4, 1))
 count = 0
@@ -46,13 +70,13 @@ while t < SIM.end_time:
 
     # loop that runs the dynamics
     while t < t_next_plot:
-        y = [0, 0, 0, Euler2Quaternion(0, 0, np.deg2rad(t))]
+        y = dynamics.update(np.zeros(6)) #[0, 0, 0, Euler2Quaternion(0, 0, np.deg2rad(t))]
         t += SIM.ts_simulation
         # Propagate dynamics
 
     # updating animation from result of dynamics
     if include_animation:
-        animation.update(*y)
+        animation.update(y)
 
     # plotting the state variables and forces with respect to time
     if include_plotter or write_data_to_file:
@@ -104,7 +128,7 @@ if "linux" in platform.system().lower():
                 for i in range(count):
                     os.system(f"mv {SIM.animation_file_format} {SIM.combined_file_format}".format(num=i))
 
-        os.system((f"ffmpeg -framerate {SIM.video_framerate} -i {SIM.combined_file_format} -c:v libx264 -r 30 -vf \"pad=ceil(iw/2)*2:ceil(ih/2)*2\" -y {SIM.video_file_name()}").format(num="%d"))
+        os.system((f"ffmpeg -framerate {SIM.video_framerate} -i {SIM.combined_file_format} -c:v libx264 -r 30 -vf \"pad=ceil(iw/2)*2:ceil(ih/2)*2\" -y {SIM.video_file_name}").format(num="%d"))
 
         for i in range(count):
             os.system(f"rm {SIM.combined_file_format}".format(num=i))

@@ -1,4 +1,4 @@
-import sys
+import sys, os
 sys.path.append('.')# one directory up
 import numpy as np
 
@@ -77,13 +77,15 @@ class Animation():
 
 
     def update(self, 
-            position_north, # position north
-            position_east, # position east
-            position_down, # position down
-            quaternion
+            _state
         ):
+        pn = _state.item(0) # position north
+        pe = _state.item(1) # position east
+        pd = _state.item(2) # position down
+        e  = _state[6:10]
+
         # draw plot elements: cart, bob, rod
-        self.drawObject(position_north, position_east, position_down, quaternion)
+        self.drawObject(pn, pe, pd, e)
 
         # Set initialization flag to False after first call
         if self.init:

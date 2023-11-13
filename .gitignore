@@ -1,10 +1,10 @@
-/*.vtu
-/*.mp4
-/*.jpg
-/*.png
-/*.mp4
-/*.dat
-/*.json
+data/*.vtu
+data/*.mp4
+data/*.jpg
+data/*.png
+data/*.mp4
+data/*.dat
+data/*.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

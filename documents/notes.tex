@@ -1,0 +1,196 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in,landscape]{geometry}
+\usepackage[english]{babel}
+\usepackage{amsfonts,amsmath,enumerate,amsthm,amssymb,fancyhdr,bm, lastpage}
+\usepackage{changepage, mathrsfs, tikz, multicol, parskip, graphicx, tabularray, xurl}
+
+\UseTblrLibrary{amsmath}
+\setcounter{MaxMatrixCols}{30}
+
+\setlength{\headheight}{14pt}
+\setlength{\parindent}{0pt}
+
+\newcommand{\Tau}{\mathscr{T}}
+
+\newcommand{\unitspace}[0]{}
+
+% imperial units
+\newcommand{\lb}{\unitspace{}\text{lb}}
+\newcommand{\lbf}{\unitspace{}\text{lbf}}
+\newcommand{\ft}{\unitspace{}\text{ft}}
+\newcommand{\slug}{\unitspace{}\text{slug}}
+\newcommand{\atm}{\unitspace{}\text{atm}}
+\newcommand{\lbm}{\unitspace{}\text{lbm}}
+\newcommand{\btu}{\unitspace{}\text{BTU}}
+\newcommand{\psf}{\unitspace{}\frac{\lbf}{\ft^2}}
+\newcommand{\fps}{\unitspace{}\frac{\ft}{\s}}
+\newcommand{\R}{^\circ\text{R}}
+\newcommand{\F}{^\circ\text{F}}
+
+% SI units
+\newcommand{\kg}{\unitspace{}\text{kg}}
+\newcommand{\kN}{\unitspace{}\text{kN}}
+\newcommand{\kJ}{\unitspace{}\text{kJ}}
+\newcommand{\N}{\unitspace{}\text{N}}
+\newcommand{\J}{\unitspace{}\text{J}}
+\newcommand{\kmol}{\unitspace{}\text{kmol}}
+\newcommand{\mol}{\unitspace{}\text{mol}}
+\newcommand{\Pa}{\unitspace{}\text{Pa}}
+\newcommand{\kPa}{\unitspace{}\text{kPa}}
+\newcommand{\MPa}{\unitspace{}\text{MPa}}
+\newcommand{\cm}{\unitspace{}\text{cm}}
+\newcommand{\m}{\unitspace{}\text{m}}
+\newcommand{\s}{\unitspace{}\text{s}}
+\newcommand{\C}{^\circ\text{C}}
+\newcommand{\K}{\unitspace{}\text{K}}
+
+\newcommand{\veci}{\textbf{i}}
+\newcommand{\vecj}{\textbf{j}}
+\newcommand{\veck}{\textbf{k}}
+
+\newcommand{\comment}[1]{}
+\newcommand{\img}[2]{\begin{center}\includegraphics[width=#1\textwidth]{#2}\end{center}}
+\newcommand{\sol}[0]{\par\textbf{Solution:} }
+\newcommand{\mathse}[1]{\begin{gather*}#1\end{gather*}}
+\renewcommand{\table}[2]{\begin{center}\begin{tabular}{ #1 } #2 \end{tabular}\end{center}}
+
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\paren}[1]{\left(#1\right)}
+\newcommand{\norm}[1]{\lVert#1\rVert}
+\newcommand{\mat}[1]{\begin{bmatrix} #1 \end{bmatrix}}
+\newcommand{\ceil}[1]{\left\lceil#1\right\rceil}
+\newcommand{\floor}[1]{\left\lfloor#1\right\rfloor}
+
+
+\renewcommand{\d}[2]{\frac{d #1}{d #2}}
+\newcommand{\dd}[2]{\frac{d^2 #1}{d #2^2}}
+\newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\pdd}[2]{\frac{\partial^2 #1}{\partial #2^2}}
+
+%\renewcommand{\max}[1]{\text{max}\left\{#1\right}}
+%\renewcommand{\min}[1]{\text{min}\left\{#1\right}}
+\renewcommand{\lim}[3]{\text{lim}_{#1\rightarrow #2}#3}
+
+\newcommand{\problem}[6]{
+\textbf{Problem Statement:}
+\textit{Given:} #1
+\textit{Find:} #2\par
+\textbf{Assumptions:} #3\par
+\textbf{Equations:} #4\par
+\textbf{Calculations:} #5\par
+\textbf{Conclusion:} #6\par
+}
+\newcommand{\sinput}[1]{\input{sympy_output/#1}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Marek Brodke}
+\chead{\today }
+\rhead{}
+\cfoot{\thepage\ of \pageref{LastPage}}
+
+\begin{document}
+\section{Diagram and Terms}
+\img{0.99}{diagram.png}
+
+First, let $F_E = \mat{f_{E_x} \\ f_{E_y} \\ f_{E_z}}$, $F_g = \mat{f_{g_x} \\ f_{g_y} \\ f_{g_z}}$, $F_{cp} = \mat{f_{cp_x} \\ f_{cp_y} \\ f_{cp_z}}$, $\vec{r}_E = \mat{r_{E_x} \\ r_{E_y} \\ r_{E_z}}$, and $\vec{r}_{cp} = \mat{r_{cp_x} \\ r_{cp_y} \\ r_{cp_z}}$. The total force is then,
+\mathse{
+    F = \mat{F_x\\ F_y\\ F_z} = F_E + F_g + F_{cp} = \sinput{F}.
+}
+The torque about the center of gravity is,
+\mathse{
+    \tau = \vec{r}_E \times F_E + \vec{r}_{cp} \times F_{cp} = \sinput{tau}
+}
+The value of $\vec{r}_E$ is known to us (where we place the engines). To find $\vec{r}_{cp}$, use the following equation,
+\mathse{
+    \vec{r}_{cp} = -\frac{\left(\sum_{\text{control surfaces}} F_i\right)\times \left(\sum_{\text{control surfaces}} M_i\right)}{\norm{\left(\sum_{\text{control surfaces}} F_i\right)}^2} = -\frac{\left(\sum_{\text{control surfaces}} F_i\right)\times \left(\sum_{\text{control surfaces}} r_i\times F_i\right)}{\norm{\left(\sum_{\text{control surfaces}} F_i\right)}^2}
+}
+the sums take into account the forces at each aerodynamic control surface. 
+
+\section{First Formulation of Dynamics}
+Using the quaternion representation of dynamics from the back of the book results in and substituting in forces results in,
+\begin{align*}
+    \mat{\dot{p}_n\\ \dot{p}_e\\ \dot{p}_d} &= \sinput{M1}\sinput{x1} + \sinput{B1_F}F + \sinput{B1_tau}\tau\\
+    \mat{\dot{u}\\ \dot{v}\\ \dot{w}} &= \sinput{M2}\sinput{x2} + \sinput{B2_F}F + \sinput{B1_tau}\tau\\
+    \mat{\dot{e}_0\\ \dot{e}_1\\ \dot{e}_2\\ \dot{e}_3} &= \sinput{M3}\sinput{x3} + \sinput{B3_F}F + \sinput{B3_tau}\tau\\
+    \mat{\dot{p}\\ \dot{q}\\ \dot{r}} &= \sinput{M4}\sinput{x4} + \sinput{B4_F}F + \sinput{B4_tau}\tau.
+\end{align*}
+% \emph{Note:} In the future, we may want to implement,
+% \mathse{
+%     \mat{\dot{p}\\ \dot{q}\\ \dot{r}} = I^{-1}\left(\tau - \mat{p\\ q\\ r}\times I\mat{p\\ q\\ r}\right)
+% }
+% where $I$ is the mass moment of inertia matrix (can be gotten from CAD \url{https://wiki.cadcam.com.my/knowledgebase/mass-and-area-moments-of-inertia-in-solidworks/}), this is how the book does it, they just don't say so.
+Simplifying,
+\begin{align*}
+    \mat{\dot{p}_n\\ \dot{p}_e\\ \dot{p}_d} &= \sinput{M1}\sinput{x1}\\
+    \mat{\dot{u}\\ \dot{v}\\ \dot{w}} &= \sinput{M2} + \sinput{B2_F}F\\
+    \mat{\dot{e}_0\\ \dot{e}_1\\ \dot{e}_2\\ \dot{e}_3} &= \sinput{M3}\sinput{x3}\\
+    \mat{\dot{p}\\ \dot{q}\\ \dot{r}} &= \sinput{M4} + \sinput{B4_tau}\tau.
+\end{align*}
+\subsection{State Space}
+We now need a state space. Let 
+\mathse{
+    x = \mat{p_n & \dot{p}_n & p_e & \dot{p}_e & p_d & \dot{p}_d & u & \dot{u} & v & \dot{v} & w & \dot{w} & e_0 & \dot{e}_0 & e_1 & \dot{e}_1 & e_2 & \dot{e}_2 & e_3 & \dot{e}_3 & p & \dot{p} & q & \dot{q} & r & \dot{r}}^T.
+}
+We now need to convert the equation above into state space form. Below is the general format it needs to take,
+\mathse{
+    \dot{x} = Ax + B\mat{F\\ \tau}.
+}
+
+\section{General Formulation}
+From the UAV book page 32 and 34 we know that (these are in body frame),
+\mathse{
+    m\left(\dot{V} + \omega\times V\right) = F\;\;\text{and}\;\; J\dot{\omega} + \omega\times J\omega = \tau,
+}
+where $V = \mat{u & v & w}^T$, $\omega = \mat{p & q & r}^T$, $J$ is the Mass Moment of Inertia tensor. First, handling the force term,
+\mathse{
+    m\left(\dot{V} + \omega\times V\right) = F\\
+    \dot{V} + \omega\times V = \frac{1}{m}F\\
+    \dot{V} = -\omega\times V + \frac{1}{m}F\\
+    \boxed{\mat{\dot{u}\\ \dot{v}\\ \dot{w}} = -\mat{p\\ q\\ r}\times\mat{u\\ v\\ w} + \frac{1}{m}F}.
+}
+Now for the torque term,
+\mathse{
+    J\dot{\omega} + \omega\times J\omega = \tau\\
+    J\dot{\omega}  = \tau - \omega\times J\omega\\
+    \dot{\omega}  = J^{-1}\left(\tau - \omega\times J\omega\right)\\
+    \dot{\omega}  = -J^{-1}\left(\omega\times J\omega\right) + J^{-1}\tau\\
+    \boxed{\mat{\dot{p}\\ \dot{q}\\ \dot{r}}  = -J^{-1}\left(\mat{p\\ q\\ r}\times J\mat{p\\ q\\ r}\right) + J^{-1}\tau}.
+}
+Before showing the equations, let $e = \mat{e_0 & e_1 & e_2 & e_3}^T$ represent the body's unit quaternion and $P_g = \mat{p_n & p_e & p_d}^T$ represent the body's inertial position.
+Using the quaternion representation of dynamics from the back of the book results in and substituting in forces results in,
+\begin{align*}
+    \dot{P}_g &= \sinput{M1}V\\
+    \dot{V} &= -\omega\times V  + \frac{1}{m}F\\
+    \dot{e} &= \sinput{M3}e\\
+    \dot{\omega} &= -J^{-1}\left(\omega\times J\omega\right) + J^{-1}\tau.
+\end{align*}
+% Substituting,
+% \begin{align*}
+%     \mat{\dot{p}_n\\ \dot{p}_e\\ \dot{p}_d} &= \sinput{M1}\sinput{x1} + \sinput{B1_F}F + \sinput{B1_tau}\tau\\
+%     \mat{\dot{u}\\ \dot{v}\\ \dot{w}} &= \sinput{M2}\sinput{x2} + \sinput{B2_F}F + \sinput{B1_tau}\tau\\
+%     \mat{\dot{e}_0\\ \dot{e}_1\\ \dot{e}_2\\ \dot{e}_3} &= \sinput{M3}\sinput{x3} + \sinput{B3_F}F + \sinput{B3_tau}\tau\\
+%     \mat{\dot{p}\\ \dot{q}\\ \dot{r}} &= \sinput{M4}\sinput{x4} + \sinput{B4_F}F + \sinput{B4_tau}\tau.
+% \end{align*}
+% Simplifying,
+% \begin{align*}
+%     \mat{\dot{p}_n\\ \dot{p}_e\\ \dot{p}_d} &= \sinput{M1}\sinput{x1}\\
+%     \mat{\dot{u}\\ \dot{v}\\ \dot{w}} &= \sinput{M2} + \sinput{B2_F}F\\
+%     \mat{\dot{e}_0\\ \dot{e}_1\\ \dot{e}_2\\ \dot{e}_3} &= \sinput{M3}\sinput{x3}\\
+%     \mat{\dot{p}\\ \dot{q}\\ \dot{r}} &= \sinput{M4} + \sinput{B4_tau}\tau.
+% \end{align*}
+
+% \section{Others}
+% \mathse{
+%     \sinput{J_inv}\\
+%     \sinput{M4_acc}
+% }
+
+
+
+\newpage
+\begin{center}
+    References:
+\end{center}
+\url{https://www.intechopen.com/chapters/64567}
+\end{document}

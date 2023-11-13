@@ -27,6 +27,7 @@ class DataPlotter:
     dimension_names = ["North", "East", "Down"]
     colors          = ["tab:blue", "tab:orange", "tab:green"]
 
+
     def __init__(self, width=10, height=8, plot=True) -> None:
         self.plot = plot
 
@@ -115,6 +116,7 @@ class DataPlotter:
             else:
                 exec(f"self.{var} = []")
 
+
     def formatStringForLatex(self, s:str):
         components = re.split(r"\s+", s)
         for j, item in enumerate(components):
@@ -126,10 +128,6 @@ class DataPlotter:
                     underscores[i] = f"\\text{{{name}}}"
             components[j] = "_{".join(underscores) + "}"*(len(underscores)-1)
         return "$" + "\;".join(components) + "$"
-
-            
-            
-                
 
 
     def createPlot(self):
@@ -199,8 +197,9 @@ class DataPlotter:
 
             self.orientePlot()
 
-    def show(self):
-        self.fig.show()
+
+    def show(self): self.fig.show()
+
 
     def savefig(self, image_file_for_outputs_plot=None, image_file_for_inputs_plot=None, *args, **kwargs):
         if image_file_for_inputs_plot is not None and self.plot:
@@ -209,6 +208,7 @@ class DataPlotter:
         if image_file_for_outputs_plot is not None and self.plot:
             self.fig.savefig(image_file_for_outputs_plot, *args, **kwargs)
     
+
     def saveData(self, file_for_data):
         data = {}
         data["t"] = self.t
