@@ -28,8 +28,12 @@ class DataPlotter:
     colors          = ["tab:blue", "tab:orange", "tab:green"]
 
 
-    def __init__(self, width=10, height=8, plot=True) -> None:
+    def __init__(self, width=10, height=8, plot=True, interactive=True) -> None:
         self.plot = plot
+        print("\nPlotter:")
+        print("  Rendering Setup:")
+        print("    interactive:", interactive)
+        print("    plotting:",    plot)
 
         if self.plot:
             self.fig, axes_temp           = plt.subplots(*self.layout, sharex=True)

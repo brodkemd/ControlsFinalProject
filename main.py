@@ -9,7 +9,7 @@ from viewers.animation                  import Animation
 from viewers.dataPlotter                import DataPlotter
 from dynamics.dynamics                  import Dynamics
 
-# use these euler angles to initial quaternion
+# use these euler angles to initial quaternion (easiest method)
 phi   = 0
 theta = 0
 psi   = 0
@@ -41,16 +41,21 @@ write_data_to_file = 1
 if include_animation:
     # read mesh and oriente along x-axis, that is what the scale matrix does
     animation = Animation(
-        file="meshes/Body.vtu",
-        scale=np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]]), 
-        interactive=show_figures,
-        write_meshes=False,
-        width=SIM.fig_width,
-        height=SIM.fig_height
+        file         = "meshes/Body.vtu",
+        scale        = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]]), 
+        interactive  = show_figures,
+        write_meshes = False,
+        width        = SIM.fig_width,
+        height       = SIM.fig_height
     )
 
 if include_plotter or write_data_to_file:
-    plotter = DataPlotter(width=SIM.fig_width, height=SIM.fig_height, plot=include_plotter)
+    plotter = DataPlotter(
+        width       = SIM.fig_width,
+        height      = SIM.fig_height, 
+        plot        = include_plotter,
+        interactive = show_figures
+    )
 
 # turn of screen rendering if show animation is false
 if not show_figures:

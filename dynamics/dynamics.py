@@ -68,6 +68,9 @@ class Dynamics:
 
 
     def h(self, u):
+        e = self.state[6:10]
+        if np.linalg.norm(e) != 1.0:
+            raise ValueError(f"None unit quaternion detected in dynamics: norm = {np.linalg.norm(e)}")
         return self.state.copy()
 
 
