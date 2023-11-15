@@ -165,6 +165,29 @@ Using the quaternion representation of dynamics from the back of the book result
     \dot{e} &= \sinput{M3}e\\
     \dot{\omega} &= -J^{-1}\left(\omega\times J\omega\right) + J^{-1}\tau.
 \end{align*}
+
+\section{Linearizing}
+For this section, we will use the general form of the dynamics equations. Let $x = \mat{u\\ v\\ w\\ \dot{e}_0\\ \dot{e}_1\\ \dot{e}_2\\ \dot{e}_3\\ \dot{p}\\ \dot{q}\\ \dot{r}} $ First, we need to find equilibrium. So,
+\mathse{
+    \dot{x} = f(x, u) \implies \mat{\dot{p}_n\\ \dot{p}_e\\ \dot{p}_d\\ \dot{u}\\ \dot{v}\\ \dot{w}\\ \dot{e}_0\\ \dot{e}_1\\ \dot{e}_2\\ \dot{e}_3\\ \dot{p}\\ \dot{q}\\ \dot{r}} =\\ \sinput{2_f}.
+}
+\emph{Note}: the three last entries are not 0, they are just huge.
+{\tiny
+\mathse{
+    \sinput{2_A}x + \sinput{2_B}u
+}
+}
+
+
+
+% The equilibrium state uses the euler angles, 
+% \mathse{
+%     \phi = \sinput{2_phi_e}\;(\text{don't care, just chose this}),\;\; \theta_e = \sinput{2_theta_e},\;\;\text{and}\;\;\psi_e = \sinput{2_psi_e}\;(\text{don't care, just chose this}). 
+% }
+% This results in the equilibrium state,
+% \mathse{
+%     x_e = \mat{\dot{p}_n\\ \dot{p}_e\\ \dot{p}_d\\ \dot{u}\\ \dot{v}\\ \dot{w}\\ \dot{e}_0\\ \dot{e}_1\\ \dot{e}_2\\ \dot{e}_3\\ \dot{p}\\ \dot{q}\\ \dot{r}} = \sinput{2_dot_x_e}.
+% }
 % Substituting,
 % \begin{align*}
 %     \mat{\dot{p}_n\\ \dot{p}_e\\ \dot{p}_d} &= \sinput{M1}\sinput{x1} + \sinput{B1_F}F + \sinput{B1_tau}\tau\\
