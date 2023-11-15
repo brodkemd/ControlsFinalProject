@@ -23,25 +23,25 @@ class ForcesMoments:
 
         '''
         # Defines the coefficients based on the current Mach and AOA
-        Cd = 
-        Cl =
-        Cm =
+        Cd = 0
+        Cl = 0
+        Cm = 0
 
         # Calculates the forces for the body and the control surfaces
         # body forces
-        Fxb = 
-        Fyb = 
-        Fzb =
+        Fxb = 0
+        Fyb = 0
+        Fzb = 0
 
         #surface forces 
-        Fxs = 
-        Fsy = 
-        Fsz = 
+        Fxs = 0
+        Fsy = 0
+        Fsz = 0
 
         #Engine forces
-        FEx = 
-        FEy = 
-        FEz = 
+        FEx = 0
+        FEy = 0
+        FEz = 0
 
         return 
 
