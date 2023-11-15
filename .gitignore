@@ -5,6 +5,7 @@ data/*.png
 data/*.mp4
 data/*.dat
 data/*.json
+/*.vtu
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

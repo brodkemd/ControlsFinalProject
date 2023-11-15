@@ -1,5 +1,6 @@
 from sympy import *
 import os
+
 #from tools.rotations import Euler2Quaternion
 # from sympy.printing.latex import LatexPrinter
 # from sympy.core.function import UndefinedFunction
@@ -131,6 +132,9 @@ e_dot     =  M2*e
 omega_dot = -1*J.inv()*(omega.cross(J*omega)) + J.inv()*tau
 
 dot_x_e = Matrix([
+    0, # dot p_n
+    0, # dot p_e
+    0, # dot p_d
     0, # dot u
     0, # dot v
     0, # dot w
@@ -144,10 +148,10 @@ dot_x_e = Matrix([
 ])
 
 f = zeros(len(dot_x_e), 1)
-shift = 3
-# f[0]  = P_g_dot[0]
-# f[1]  = P_g_dot[1]
-# f[2]  = P_g_dot[2]
+shift = 0
+f[0]  = P_g_dot[0]
+f[1]  = P_g_dot[1]
+f[2]  = P_g_dot[2]
 f[3-shift]  = V_dot[0]
 f[4-shift]  = V_dot[1]
 f[5-shift]  = V_dot[2]
@@ -194,23 +198,30 @@ write(theta_e, "theta_e")
 write(psi_e, "psi_e")
 
 x_e_subs = []
-for i, item in enumerate(("e_0,e_1,e_2,e_3,u,v,w,p,q,r".split(","))):
+for i, item in enumerate(("p_n,p_e,p_d,e_0,e_1,e_2,e_3,u,v,w,p,q,r".split(","))):
     x_e_subs.append((eval(item), x_e[i]))
 
 u_e_subs = []
 for i, item in enumerate(("f_E_x,f_E_y,f_E_z,f_cp_x,f_cp_y,f_cp_z,r_cp_x,r_cp_y,r_cp_z".split(","))):
     u_e_subs.append((eval(item), u_e[i]))
 
-df_dx = f.jacobian([e_0,e_1,e_2,e_3,u,v,w,p,q,r])
+df_dx = f.jacobian([p_n,p_e,p_d,e_0,e_1,e_2,e_3,u,v,w,p,q,r])
 write(df_dx, "df_dx")
 
-df_du = f.jacobian([f_E_x, f_E_y, f_E_z, f_cp_x, f_cp_y, f_cp_z, r_cp_x, r_cp_y, r_cp_z])
-
-# f_e = f.subs(x_e_subs + u_e_subs)
-# write(f_e, "f_e")
+df_du = f.jacobian([f_E_x,f_E_y,f_E_z,f_cp_x,f_cp_y,f_cp_z,r_cp_x,r_cp_y,r_cp_z])
+write(df_du, "df_du")
 
 A = df_dx.subs(x_e_subs + u_e_subs)
 write(A, "A")
 
 B = df_du.subs(x_e_subs + u_e_subs)
 write(B, "B")
+
+#print(A**0)
+
+C = []
+for i in range(0,len(x_e)-1):
+    C.append(((A**i)*B).T)
+
+CC = Matrix(C).T
+print(CC.shape)
