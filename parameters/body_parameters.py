@@ -2,6 +2,12 @@ import numpy as np
 
 mass = 100
 gravity = 9.81
+Aref = 1413.72 #Starship reference area, m^2
+
+# Atmospheric Parameters
+# rhoAvg = 0.016164897 #kg/m^3
+# gamma = 1.29
+# gravity = 3.73 #m/s^2
 
 J_xx = 10
 J_yy = 10
