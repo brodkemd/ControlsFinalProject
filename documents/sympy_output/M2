@@ -1,1 +1,1 @@
-\left[\begin{matrix}- q w + r v\\p w - r u\\- p v + q u\end{matrix}\right]
+\left[\begin{matrix}0 & - \frac{p}{2} & - \frac{q}{2} & - \frac{r}{2}\\\frac{p}{2} & 0 & \frac{r}{2} & - \frac{q}{2}\\\frac{q}{2} & - \frac{r}{2} & 0 & \frac{p}{2}\\\frac{r}{2} & \frac{q}{2} & - \frac{p}{2} & 0\end{matrix}\right]
