@@ -15,8 +15,8 @@ J = Matrix([
 J_xy_val = 0
 J_xz_val = 0
 J_yz_val = 0
-r_E_y = 0
-r_E_z = 0
+r_E_y_val = 0
+r_E_z_val = 0
 
 
 vals = [(J_xy, J_xy_val), (J_xz, J_xz_val), (J_yz, J_yz_val)]

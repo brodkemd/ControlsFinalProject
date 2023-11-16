@@ -1,1 +1,1 @@
-\left[\begin{matrix}- f_{cp y} r_{cp z} + f_{cp z} r_{cp y}\\- f_{E z} r_{E x} + f_{cp x} r_{cp z} - f_{cp z} r_{cp x}\\f_{E y} r_{E x} - f_{cp x} r_{cp y} + f_{cp y} r_{cp x}\end{matrix}\right]
+\left[\begin{matrix}- f_{E y} r_{E z} + f_{E z} r_{E y} - f_{cp y} r_{cp z} + f_{cp z} r_{cp y}\\f_{E x} r_{E z} - f_{E z} r_{E x} + f_{cp x} r_{cp z} - f_{cp z} r_{cp x}\\- f_{E x} r_{E y} + f_{E y} r_{E x} - f_{cp x} r_{cp y} + f_{cp y} r_{cp x}\end{matrix}\right]
