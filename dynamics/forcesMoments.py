@@ -4,14 +4,52 @@ import parameters.body_parameters as BODY
 
 class ForcesMoments:
     def __init__(self) -> None:
+        # Surface fit coefficients for the force and moments
+        self.Cdf = np.array[0.03605, -0.01182, -0.0001243, 0.01985, -0.0001574, 7.297E-5, 0.001095, -8.369E-6, -6.47E-7]
+        self.Clf = np.array[0.01872, -0.07913, -0.002173, 0.06861, 0.004314, 0.0001143, -0.002112, -2.849E-5, -1.013E-6]
+        self.Cmf = np.array[-0.02598, 0.1033, 0.0002977, -0.08253, -0.003769, -0.0002425, -0.001543, 5.302E-5, 2.275E-6]
+       
         pass
 
-    def update(self):
-        pass
+    def update(self, M, AOA, B, delSurf, delT, delE):
+        '''
+        Inputs:
+        M = Current Mach
+        AOA = Current AOA [deg]
+        B = Current sideslip, beta [deg]
+        delSurf = Array of control surface deflections [delPortCanard, delStarCanard, delPortFin, delStarFin]
+        delT = Throttle percentage of full throttle (can come from controller) [0,1]
+        delE = Array of engine deflections [deflection from x-axis, rotation]
+
+        '''
+        # Defines the coefficients based on the current Mach and AOA
+        Cd = 0
+        Cl = 0
+        Cm = 0
+
+        # Calculates the forces for the body and the control surfaces
+        # body forces
+        Fxb = 0
+        Fyb = 0
+        Fzb = 0
+
+        #surface forces 
+        Fxs = 0
+        Fsy = 0
+        Fsz = 0
+
+        #Engine forces
+        FEx = 0
+        FEy = 0
+        FEz = 0
+
+        return 
 
 
 class CPFromAerodynamics:
     def __init__(self) -> None:
+        #Need locations from the c.g. of the canards and fins
+        
         pass
 
     def update(self):

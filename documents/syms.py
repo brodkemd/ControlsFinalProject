@@ -1,81 +1,6 @@
-import sympy as sp
-from sympy import *
-import os
-# from sympy.printing.latex import LatexPrinter
-# from sympy.core.function import UndefinedFunction
-
-# class MyLatexPrinter(LatexPrinter):
-#     """Print derivative of a function of symbols in a shorter form.
-#     """
-#     def _print_Derivative(self, expr):
-#         function, *vars = expr.args
-#         if not isinstance(type(function), UndefinedFunction) or \
-#            not all(isinstance(i, Symbol) for i in vars):
-#             return super()._print_Derivative(expr)
-
-#         # If you want the printer to work correctly for nested
-#         # expressions then use self._print() instead of str() or latex().
-#         # See the example of nested modulo below in the custom printing
-#         # method section.
-#         return "{}".format(
-#             self._print(Symbol(function.func.__name__)))
-
-# #init_printing(derivative='dot')
-# # Initialize the pretty printing system
-# init_printing()
-
-# # Define a function to customize derivative printing using dot notation
-# def custom_derivative_printer(expr, **kwargs):
-#     return latex(expr, symbol_names={Derivative: lambda x: f'{x.args[0]}\\dot{{{x.args[1]}}}'})
-
-# # Change the way derivatives are represented globally
-# init_printing(latex_printer=custom_derivative_printer)
-
-cwd = os.path.join(os.path.dirname(__file__), "sympy_output")
-def write(s, _file:str):
-    if not isinstance(s, str):
-        #s = MyLatexPrinter().doprint(s)
-        s = sp.latex(s)
-        print
-
-    _file = os.path.join(cwd, _file)
-    with open(_file, "w") as file:
-        file.write(s)
-
-def diff(f):
-    return sp.diff(f, t)
-
-t = sp.symbols("t")
-f_E_x, f_E_y, f_E_z, f_g_x, f_g_y, f_g_z, f_cp_x, f_cp_y, f_cp_z, r_E_x, r_E_y, r_E_z, r_cp_x, r_cp_y, r_cp_z = sp.symbols("f_E_x, f_E_y, f_E_z, f_g_x, f_g_y, f_g_z, f_cp_x, f_cp_y, f_cp_z, r_E_x, r_E_y, r_E_z, r_cp_x, r_cp_y, r_cp_z")
-e_0,e_1,e_2,e_3,u,v,w,p,q,r = sp.symbols("e_0,e_1,e_2,e_3,u,v,w,p,q,r")
-e_0_f = sp.Function("e_0", real=True)(t)
-e_1_f = sp.Function("e_1", real=True)(t)
-e_2_f = sp.Function("e_2", real=True)(t)
-e_3_f = sp.Function("e_3", real=True)(t)
-u_f = sp.Function("u", real=True)(t)
-v_f = sp.Function("v", real=True)(t)
-w_f = sp.Function("w", real=True)(t)
-p_f = sp.Function("p", real=True)(t)
-q_f = sp.Function("q", real=True)(t)
-r_f = sp.Function("r", real=True)(t)
-
-f_subs = []
-for item in ("e_0,e_1,e_2,e_3,u,v,w,p,q,r".split(",")):
-    f_subs.append((eval(item), eval(f"{item}_f")))
-
-Gamma_1, Gamma_2, Gamma_3, Gamma_4, Gamma_5, Gamma_6, Gamma_7, Gamma_8, m, J_xx, J_yy, J_zz, J_xz = sp.symbols("Gamma_1, Gamma_2, Gamma_3, Gamma_4, Gamma_5, Gamma_6, Gamma_7, Gamma_8, m, J_xx, J_yy, J_zz, J_xz")
-
-J = Matrix([
-    [ J_xx,    0, -J_xz],
-    [    0, J_yy,     0],
-    [-J_xz,    0,  J_zz]
-])
-
-F_E = Matrix([f_E_x, f_E_y, f_E_z])
-F_g = Matrix([f_g_x, f_g_y, f_g_z])
-F_cp = Matrix([f_cp_x, f_cp_y, f_cp_z])
-r_E = Matrix([r_E_x, r_E_y, r_E_z])
-r_cp = Matrix([r_cp_x, r_cp_y, r_cp_z])
+from syms_vars import *
+from sympy import Rational, rad, zeros, solve
+from syms_tools import write, Euler2Quaternion
 
 F = F_E + F_g + F_cp
 write(F, "F")
@@ -83,79 +8,224 @@ write(F, "F")
 tau = r_E.cross(F_E) + r_cp.cross(F_cp)
 write(tau, "tau")
 
-# vectors
-x1 = Matrix([u, v, w])
-x2 = Matrix([1])
-x3 = Matrix([e_0, e_1, e_2, e_3])
-x4 = Matrix([1])
+F_g = m*g*Matrix([
+    2*(e_1*e_3 - e_2*e_0),
+    2*(e_2*e_3 + e_1*e_0),
+    e_3**2 + e_0**2 - e_1**2 - e_2**2
+])
 
+# F_E = Matrix([
+#     T*cos(Phi),
+#     T*sin(Phi)*cos(Theta),
+#     T*sin(Phi)*cos(Theta)
+# ])
+
+# update the force to include actual force of gravity
+F = F_E + F_g + F_cp
+write(F, "F_subbed")
+
+tau = r_E.cross(F_E) + r_cp.cross(F_cp)
+write(tau, "tau_subbed")
+
+# V to V_g
 M1 = Matrix([
     [e_1**2 + e_0**2 - e_2**2 - e_3**2, 2*(e_1*e_2 - e_3*e_0), 2*(e_1*e_3 + e_2*e_0)],
     [2*(e_1*e_2 + e_3*e_0), e_2**2 + e_0**2 - e_1**2 - e_3**2, 2*(e_2*e_3 - e_1*e_0)],
     [2*(e_1*e_3 - e_2*e_0), 2*(e_2*e_3 + e_1*e_0), e_3**2 + e_0**2 - e_1**2 - e_2**2]
 ])
-M2 = Matrix([
-    [r*v - q*w],
-    [p*w - r*u],
-    [q*u - p*v]
-])
-M3 = sp.Rational(1, 2)*Matrix([
+write(M1, "M1")
+
+# e to dot e
+M2 = Rational(1, 2)*Matrix([
     [0, -p, -q, -r],
     [p, 0, r, -q],
     [q, -r, 0, p],
     [r, q, -p, 0]
 ])
-x_acc = Matrix([p, q, r])
-M4 =  Matrix([
-    [Gamma_1*p*q - Gamma_2*q*r],
-    [Gamma_5*p*r - Gamma_6*(p**2 - r**2)],
-    [Gamma_7*p*q - Gamma_1*q*r]
-])
+write(M2, "M2")
 
-for item in ["M1", "M2", "M3", "M4"]:
-    write(eval(item), item)
+# dynamics equation
+P_g_dot   =  M1*V
+V_dot     = -1*omega.cross(V) + 1/m*F
+e_dot     =  M2*e
+omega_dot = -1*J_val.inv()*(omega.cross(J*omega)) + J_val.inv()*tau
+
+dot_p_n  = P_g_dot[0]
+dot_p_e  = P_g_dot[1]
+dot_p_d  = P_g_dot[2]
+dot_u    = V_dot[0]
+dot_v    = V_dot[1]
+dot_w    = V_dot[2]
+dot_e_0  = e_dot[0]
+dot_e_1  = e_dot[1]
+dot_e_2  = e_dot[2]
+dot_e_3  = e_dot[3]
+dot_p    = omega_dot[0]
+dot_q    = omega_dot[1]
+dot_r    = omega_dot[2]
+
+x_names = "p_n,p_e,p_d,e_0,e_1,e_2,e_3,u,v,w,p,q,r".split(",")
+u_names = "f_E_x,f_E_y,f_E_z,f_cp_x,f_cp_y,f_cp_z,r_cp_x,r_cp_y,r_cp_z".split(",")
+
+def landing():
+    space = "  "
+    ############ landing state space
+    # f in dot x = f(x,u)
+    x_vars = "p_n,p_e,p_d,e_0,e_2,u,v,w,p,r".split(",")
+    u_vars = "f_E_x,f_E_y,f_E_z,f_cp_x,f_cp_y,f_cp_z,r_cp_x,r_cp_y,r_cp_z".split(",")
+
+    x_vec = [eval(item) for item in x_vars]
+    u_vec = [eval(item) for item in u_vars]
+    n = len(x_vec)
+    f = zeros(n, 1)
+
+    vals = [(f_cp_x, 0), (f_cp_y, 0), (f_cp_z, 0), (r_cp_x, 0), (r_cp_y,0), (r_cp_z,0)]
+
+    for i in range(n): f[i] = eval(f"dot_{x_vars[i]}")
+
+    write(f, "f_x_u")
+    #### for landing 
+
+    phi_e   = rad(0) # dont care, pick 0
+    theta_e = rad(90) # has to be this
+    psi_e   = rad(0) # dont care, pick 0
+    print(space+"Quaternion:",Euler2Quaternion(phi_e, theta_e, psi_e))
+    x_e = Matrix([
+        0, # p_n
+        0, # p_e
+        0, # p_d
+        0, # u
+        0, # v
+        0, # w
+        Euler2Quaternion(phi_e, theta_e, psi_e)[0], # e_0
+        Euler2Quaternion(phi_e, theta_e, psi_e)[1], # e_1
+        Euler2Quaternion(phi_e, theta_e, psi_e)[2], # e_2
+        Euler2Quaternion(phi_e, theta_e, psi_e)[3], # e_3
+        0, # p
+        0, # q
+        0  # r
+    ])
+
+    # u_e = Matrix([
+    #     m*g, 0, 0, # f_E_x, f_E_y, f_E_z
+    #     0, 0, 0,   # f_cp_x, f_cp_y, f_cp_z
+    #     0, 0, 0    # r_cp_x, r_cp_y, r_cp_z
+    # ])
+
+    x_e_subs = []
+    for i, item in enumerate(x_names):
+        x_e_subs.append((eval(item), x_e[i]))
+
+    f_e = f.subs(x_e_subs)
+    print(f_e)
+    print(solve(f_e, u_vec))
+    exit()
+
+    u_e_subs = []
+    for i, item in enumerate(u_names):
+        u_e_subs.append((eval(item), u_e[i]))
+
+    df_dx = f.jacobian(x_vec)
+    write(df_dx, "df_dx")
+
+    df_du = f.jacobian(u_vec)
+    write(df_du, "df_du")
+
+    A = df_dx.subs(x_e_subs + u_e_subs)
+    write(A, "A")
+
+    B = df_du.subs(x_e_subs + u_e_subs)
+    write(B, "B")
+
+    C = []
+    for i in range(0, len(x_e)):
+        C.append((A**i)*B)
+
+    CC = Matrix.hstack(*C)
+    print(space+"Rows:", CC.shape[0])
+    print(space+"Rank:", CC.rank())
 
 
+def descent():
+    space = "  "
+    print("Descent:")
+    ############ landing state space
+    # f in dot x = f(x,u)
+    x_vars = "p_n,p_e,p_d,e_0,e_2,u,v,w,p,r".split(",")
+    u_vars = "f_cp_x,f_cp_y,f_cp_z,r_cp_x,r_cp_y,r_cp_z".split(",")
 
-for item in ["x1", "x2", "x3", "x4"]:
-    write(eval(item), item)
+    x_vec = [eval(item) for item in x_vars]
+    u_vec = [eval(item) for item in u_vars]
+    n = len(x_vec)
+    f = zeros(n, 1)
 
-# tau = [l, m, n]
+    vals = [(f_E_x, 0), (f_E_y, 0), (f_E_z, 0)]
 
-B1_F = sp.zeros(3, 3)
-B1_tau = sp.zeros(3, 3)
+    for i in range(n): f[i] = eval(f"dot_{x_vars[i]}")
 
-B2_F = 1/m*sp.eye(3)
-B2_tau = sp.zeros(3, 3)
+    write(f, "f_x_u")
+    #### for landing
 
-B3_F = sp.zeros(4, 3)
-B3_tau = sp.zeros(4, 3)
+    phi_e   = rad(0) # has to be, this is omitted
+    theta_e = rad(0) # has to be
+    psi_e   = rad(0) # has to be
+    print(space+"Quaternion:",Euler2Quaternion(phi_e, theta_e, psi_e))
+    x_e = Matrix([
+        0, # p_n
+        0, # p_e
+        0, # p_d
+        0, # u
+        0, # v
+        0, # w
+        Euler2Quaternion(phi_e, theta_e, psi_e)[0], # e_0
+        Euler2Quaternion(phi_e, theta_e, psi_e)[1], # e_1
+        Euler2Quaternion(phi_e, theta_e, psi_e)[2], # e_2
+        Euler2Quaternion(phi_e, theta_e, psi_e)[3], # e_3
+        0, # p
+        0, # q
+        0  # r
+    ])
 
-B4_F = sp.zeros(3, 3)
-B4_tau = Matrix([
-    [Gamma_3, 0, Gamma_4],
-    [0, 1/J_yy, 0],
-    [Gamma_4, 0, Gamma_8]
-])
+    # u_e = Matrix([
+    #     0,    0, 0, # f_E_x, f_E_y, f_E_z
+    #     0, -m*g, 0, # f_cp_x, f_cp_y, f_cp_z
+    #     0,    0, 0  # r_cp_x, r_cp_y, r_cp_z
+    # ])
 
-for item in ["B1", "B2", "B3", "B4"]:
-    for suf in ["F", "tau"]:
-        temp = f"{item}_{suf}"
-        write(eval(temp), temp)
+    x_e_subs = []
+    for i, item in enumerate(x_names):
+        x_e_subs.append((eval(item), x_e[i]))
 
-# write(J.inv(), "J_inv")
-# x_acc = Matrix([p, q, r])
+    f_e = f.subs(x_e_subs)
+    print(solve(f_e, u_vec)[0])
 
-# M4_acc = -1*J.inv()*x_acc.cross(J*x_acc)
-# write(M4_acc, "M4_acc")
+    #print(f_e)
+    exit()
 
-# B4 = Matrix([
-#     [Gamma_3*l + Gamma_4*n],
-#     [1/J_yy*m],
-#     [Gamma_4*l + Gamma_8*n]
-# ])
-# state = [p_n p_e p_d  u  v  w  e_0  e_1  e_2  e_3  p  q  r]
-#b1 = M1*x1 + B1_F*F + B1_tau*tau
-#b2 = M2*x2 + B2_F*F + B2_tau*tau
-#b3 = M3*x3 + B3_F*F + B3_tau*tau
-#b4 = M4*x4 + B4_F*F + B4_tau*tau
+    u_e_subs = []
+    for i, item in enumerate(u_names):
+        u_e_subs.append((eval(item), u_e[i]))
+
+    df_dx = f.jacobian(x_vec)
+    write(df_dx, "df_dx")
+
+    df_du = f.jacobian(u_vec)
+    write(df_du, "df_du")
+
+    A = df_dx.subs(x_e_subs + u_e_subs)
+    write(A, "A")
+
+    B = df_du.subs(x_e_subs + u_e_subs)
+    write(B, "B")
+
+    C = []
+    for i in range(0, len(x_e)):
+        C.append((A**i)*B)
+
+    CC = Matrix.hstack(*C)
+    print(space+"Rows:", CC.shape[0])
+    print(space+"Rank:", CC.rank())
+
+
+landing()
+descent()
