@@ -5,52 +5,28 @@ from parameters.baseClass import Base
 from tools.loadMathModule import LoadModule
 
 
-class DescentStateSpaceCP(Base):
-    def __init__(self) -> None:
+class BaseStateSpace(Base):
+    # where the file is located
+    cwd = os.path.dirname(__file__)
+
+    # initializing for convenience
+    A, B, C, x_e, u_e = None, None, None, None, None
+
+    def __init__(self, module_file:str) -> None:
         super().__init__()
-        print(dir(self))
-        cwd = os.path.dirname(__file__)
-        LoadModule(os.path.join(cwd, "descent.h"), self)
+        LoadModule(os.path.join(self.cwd, module_file), self)
 
 
-class FlipStateSpaceCP(Base):
+class DescentStateSpaceCP(BaseStateSpace):
     def __init__(self) -> None:
-        super().__init__()
-        print(dir(self))
-        cwd = os.path.dirname(__file__)
-        LoadModule(os.path.join(cwd, "flip.h"), self)
+        super().__init__("descentCP.h")
 
 
-class LandingStateSpace(Base):
+class FlipStateSpaceCP(BaseStateSpace):
     def __init__(self) -> None:
-        super().__init__()
-        print(dir(self))
-        cwd = os.path.dirname(__file__)
-        LoadModule(os.path.join(cwd, "landing.h"), self)
+        super().__init__("flipCP.h")
 
-        # self.A = np.array([
-        #     [0, 0, 0, 0, 0, 1, 0, 0],
-        #     [0, 0, 0, 0, 1, 0, 0, 0],
-        #     [0, 0, 0, -1, 0, 0, 0, 0],
-        #     [0, 0, 0, 0, 0, 0, -sqrt(2)*self.g, 0],
-        #     [0, 0, 0, 0, 0, 0, 0, 0],
-        #     [0, 0, 0, 0, 0, 0, sqrt(2)*self.g, 0],
-        #     [0, 0, 0, 0, 0, 0, 0, -sqrt(2)/4],
-        #     [0, 0, 0, 0, 0, 0, 0, 0]
-        # ], dtype=float)
-        
-        # self.B = np.array([
-        #     [0, 0, 0],
-        #     [0, 0, 0],
-        #     [0, 0, 0],
-        #     [1/self.m, 0, 0],
-        #     [0, 1/self.m, 0],
-        #     [0, 0, 1/self.m],
-        #     [0, 0, 0],
-        #     [0, 0, -self.r_E_x/self.J_yy]
-        # ], dtype=float)
 
-        # self.C = np.eye(len(self.A), dtype=float)
-
-        # self.x_e = np.array([0, 0, 0, 0, 0, 0, sqrt(2)/2, 0, sqrt(2)/2, 0, 0, 0, 0], dtype=float)
-        # self.u_e = np.array([self.g*self.m, 0, 0, 0, 0, 0, 0, 0, self.R],            dtype=float)
+class LandingStateSpace(BaseStateSpace):
+    def __init__(self) -> None:
+        super().__init__("landing.h")

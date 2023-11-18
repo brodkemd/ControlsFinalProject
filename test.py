@@ -1,5 +1,4 @@
-from tools.loadMathModule import LoadModule
+from controller.stateSpace import LandingStateSpace
 
-
-obj = LoadModule("out.h")
-print(obj.tau)
+obj = LandingStateSpace()
+print(obj.x_e)

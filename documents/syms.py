@@ -199,7 +199,7 @@ def computeStateSpace(name, x_vars, u_vars, x_e, x_dot_e = None):
         print(2*space+"Rank:", rank)
         exit()
     
-    return A.copy(), B.copy(), CC.copy(), x_e_vec.copy(), u_e_vec.copy()
+    return A.copy(), B.copy(), CC.copy(), Matrix(x_e_vec).copy(), Matrix(u_e_vec).copy()
 
 def landing():
     print("Landing")
@@ -228,10 +228,10 @@ def landing():
 
     A, B, CC, x_e, u_e = computeStateSpace("landing", x_vars, u_vars, x_e)
     C = eye(n)
-    print("A =", A)
-    print("B =", B)
-    print("x_e =", x_e)
-    print("u_e =", u_e)
+    # print("A =", A)
+    # print("B =", B)
+    # print("x_e =", x_e)
+    # print("u_e =", u_e)
     
     writeMathModule("landing", A=A, B=B, C=C, x_e=x_e, u_e=u_e)
 
@@ -241,8 +241,8 @@ landing()
     # K = (alpha - a_A)*A_A.inv()
 
 
-def flip():
-    print("Descent")
+def flipCP():
+    print("flipCP")
     # for printing's sake
     space = "  "
 
@@ -268,20 +268,20 @@ def flip():
     print(x_e)
 
 
-    A, B, CC, x_e, u_e = computeStateSpace("flip", x_vars, u_vars, x_e)
+    A, B, CC, x_e, u_e = computeStateSpace("flipCP", x_vars, u_vars, x_e)
     C = eye(n)
-    print("A =", A)
-    print("B =", B)
-    print("x_e =", x_e)
-    print("u_e =", u_e)
+    # print("A =", A)
+    # print("B =", B)
+    # print("x_e =", x_e)
+    # print("u_e =", u_e)
 
-    writeMathModule("flip", A=A, B=B, C=C, x_e=x_e, u_e=u_e)
+    writeMathModule("flipCP", A=A, B=B, C=C, x_e=x_e, u_e=u_e)
 
-flip()
+flipCP()
 
 
-def descent():
-    print("Descent")
+def descentCP():
+    print("DescentCP")
     # for printing's sake
     space = "  "
 
@@ -312,16 +312,16 @@ def descent():
     }
 
 
-    A, B, CC, x_e, u_e = computeStateSpace("descent", x_vars, u_vars, x_e, x_dot_e)
+    A, B, CC, x_e, u_e = computeStateSpace("descentCP", x_vars, u_vars, x_e, x_dot_e)
     C = eye(n)
-    print("A =", A)
-    print("B =", B)
-    print("x_e =", x_e)
-    print("u_e =", u_e)
+    # print("A =", A)
+    # print("B =", B)
+    # print("x_e =", x_e)
+    # print("u_e =", u_e)
 
-    writeMathModule("descent", A=A, B=B, C=C, x_e=x_e, u_e=u_e)
+    writeMathModule("descentCP", A=A, B=B, C=C, x_e=x_e, u_e=u_e)
 
-descent()
+descentCP()
 
 
 
