@@ -1,6 +1,6 @@
 from sympy import symbols, Matrix, Function
 
-t, m, g, J_xx, J_yy, J_zz, J_xy, J_xz, J_yz = symbols("t, m, g, J_xx, J_yy, J_zz, J_xy, J_xz, J_yz")
+t, m, g, J_xx, J_yy, J_zz, J_xy, J_xz, J_yz, R = symbols("t, m, g, J_xx, J_yy, J_zz, J_xy, J_xz, J_yz, R")
 f_E_x, f_E_y, f_E_z, f_g_x, f_g_y, f_g_z, f_cp_x, f_cp_y, f_cp_z, r_E_x, r_E_y, r_E_z, r_cp_x, r_cp_y, r_cp_z = symbols("f_E_x, f_E_y, f_E_z, f_g_x, f_g_y, f_g_z, f_cp_x, f_cp_y, f_cp_z, r_E_x, r_E_y, r_E_z, r_cp_x, r_cp_y, r_cp_z")
 p_n,p_e,p_d,e_0,e_1,e_2,e_3,u,v,w,p,q,r = symbols("p_n,p_e,p_d,e_0,e_1,e_2,e_3,u,v,w,p,q,r")
 
@@ -19,8 +19,8 @@ r_E_y_val = 0
 r_E_z_val = 0
 
 
-vals = [(J_xy, J_xy_val), (J_xz, J_xz_val), (J_yz, J_yz_val)]
-J_val = J.subs(vals)
+vals = [(J_xy, J_xy_val), (J_xz, J_xz_val), (J_yz, J_yz_val), (r_E_y, r_E_y_val), (r_E_z, r_E_z_val)]
+# J_val = J.subs(vals)
 
 V     = Matrix([u, v, w])
 omega = Matrix([p, q, r])
@@ -50,3 +50,32 @@ r_f   = Function("r",   real=True)(t)
 f_subs = []
 for item in ("p_n,p_e,p_d,e_0,e_1,e_2,e_3,u,v,w,p,q,r".split(",")):
     f_subs.append((eval(item), eval(f"{item}_f")))
+
+default_values_x = {
+    p_n : 0,
+    p_e : 0,
+    p_d : 0,
+    u   : 0,
+    v   : 0,
+    w   : 0,
+    e_0 : 1,
+    e_1 : 0,
+    e_2 : 0,
+    e_3 : 0,
+    p   : 0,
+    q   : 0,
+    r   : 0
+}
+
+default_values_u = {
+    f_E_x  : 0,
+    f_E_y  : 0,
+    f_E_z  : 0,
+    f_cp_x : 0,
+    f_cp_y : 0,
+    f_cp_z : 0,
+    r_cp_x : 0,
+    r_cp_y : 0,
+    r_cp_z : R
+}
+

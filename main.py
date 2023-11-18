@@ -8,6 +8,8 @@ import parameters.simulation_parameters as SIM
 from viewers.animation                  import Animation
 from viewers.dataPlotter                import DataPlotter
 from dynamics.dynamics                  import Dynamics
+from dynamics.forcesMoments             import ForcesMomentsFromCP
+from controller.fullStateFeedback       import FullStateFeedBack
 
 # use these euler angles to initial quaternion (easiest method)
 phi   = 0
@@ -62,7 +64,12 @@ if not show_figures:
     plt.close('all')
     mpl.use('Agg')
 
+controller = FullStateFeedBack()
+exit()
 dynamics = Dynamics(state)
+forces   = ForcesMomentsFromCP()
+#exit()
+
 
 t = SIM.start_time
 inputs = np.zeros((4, 1))
@@ -75,7 +82,8 @@ while t < SIM.end_time:
 
     # loop that runs the dynamics
     while t < t_next_plot:
-        y = dynamics.update(np.zeros(6)) #[0, 0, 0, Euler2Quaternion(0, 0, np.deg2rad(t))]
+        u = forces.update(state, np.zeros(3), np.ones(3), np.zeros(3))
+        y = dynamics.update(u) #[0, 0, 0, Euler2Quaternion(0, 0, np.deg2rad(t))]
         t += SIM.ts_simulation
         # Propagate dynamics
 

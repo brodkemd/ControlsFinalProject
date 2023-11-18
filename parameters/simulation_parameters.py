@@ -15,7 +15,7 @@ fig_height = 9
 data_dir                 = os.path.join(os.getcwd(), "data")
 
 # for rendering purposes
-prefix                   = str(round(time.time()*10))
+prefix                   = "out"#str(round(time.time()*10))
 output_plot_file_format  = os.path.join(data_dir, f"{prefix}_"+"plot_{num}_output.jpg")
 input_plot_file_format   = os.path.join(data_dir, f"{prefix}_"+"plot_{num}_input.jpg")
 animation_file_format    = os.path.join(data_dir, f"{prefix}_"+"animation_{num}.jpg")
@@ -24,4 +24,4 @@ combined_file_format     = os.path.join(data_dir, f"{prefix}_"+"{num}.jpg")
 video_framerate          = 15
 data_file                = os.path.join(data_dir, f"{prefix}_"+"data.json")
 
-video_file_name          = os.path.join(data_dir, "output.mp4")
+video_file_name          = os.path.join(data_dir, f"{prefix}_"+"output.mp4")
