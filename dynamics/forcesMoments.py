@@ -4,6 +4,17 @@ import parameters.body_parameters as BODY
 
 class ForcesMoments:
     def __init__(self) -> None:
+        #Need locations from the c.g. of the canards and fins
+        self.FMFromCP = ForcesMomentsFromCP()
+
+    def update(self):
+        pass
+
+
+
+class CPFromAerodynamics:
+    
+    def __init__(self) -> None:
         # Surface fit coefficients for the force and moments
         self.Cdf = np.array[0.03605, -0.01182, -0.0001243, 0.01985, -0.0001574, 7.297E-5, 0.001095, -8.369E-6, -6.47E-7]
         self.Clf = np.array[0.01872, -0.07913, -0.002173, 0.06861, 0.004314, 0.0001143, -0.002112, -2.849E-5, -1.013E-6]
@@ -63,16 +74,6 @@ class ForcesMoments:
         FEz = 0
 
         return 
-
-
-class CPFromAerodynamics:
-    def __init__(self) -> None:
-        #Need locations from the c.g. of the canards and fins
-        
-        pass
-
-    def update(self):
-        pass
 
 
 class ForcesMomentsFromCP:

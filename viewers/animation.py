@@ -40,7 +40,7 @@ class Animation():
         self.R_plot=np.array([
                 [0, 1, 0],
                 [1, 0, 0],
-                [0, 0, 1]
+                [0, 0, -1]
         ]) # for plotting's sake
 
         self.interactive = interactive

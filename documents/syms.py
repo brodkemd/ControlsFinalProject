@@ -1,81 +1,7 @@
-import sympy as sp
-from sympy import *
-import os
-# from sympy.printing.latex import LatexPrinter
-# from sympy.core.function import UndefinedFunction
+from syms_vars import *
+from sympy import Rational, rad, zeros, solve, eye, Symbol, Poly, ones
+from syms_tools import write, Euler2Quaternion, writeMathModule
 
-# class MyLatexPrinter(LatexPrinter):
-#     """Print derivative of a function of symbols in a shorter form.
-#     """
-#     def _print_Derivative(self, expr):
-#         function, *vars = expr.args
-#         if not isinstance(type(function), UndefinedFunction) or \
-#            not all(isinstance(i, Symbol) for i in vars):
-#             return super()._print_Derivative(expr)
-
-#         # If you want the printer to work correctly for nested
-#         # expressions then use self._print() instead of str() or latex().
-#         # See the example of nested modulo below in the custom printing
-#         # method section.
-#         return "{}".format(
-#             self._print(Symbol(function.func.__name__)))
-
-# #init_printing(derivative='dot')
-# # Initialize the pretty printing system
-# init_printing()
-
-# # Define a function to customize derivative printing using dot notation
-# def custom_derivative_printer(expr, **kwargs):
-#     return latex(expr, symbol_names={Derivative: lambda x: f'{x.args[0]}\\dot{{{x.args[1]}}}'})
-
-# # Change the way derivatives are represented globally
-# init_printing(latex_printer=custom_derivative_printer)
-
-cwd = os.path.join(os.path.dirname(__file__), "sympy_output")
-def write(s, _file:str):
-    if not isinstance(s, str):
-        #s = MyLatexPrinter().doprint(s)
-        s = sp.latex(s)
-        print
-
-    _file = os.path.join(cwd, _file)
-    with open(_file, "w") as file:
-        file.write(s)
-
-def diff(f):
-    return sp.diff(f, t)
-
-t = sp.symbols("t")
-f_E_x, f_E_y, f_E_z, f_g_x, f_g_y, f_g_z, f_cp_x, f_cp_y, f_cp_z, r_E_x, r_E_y, r_E_z, r_cp_x, r_cp_y, r_cp_z = sp.symbols("f_E_x, f_E_y, f_E_z, f_g_x, f_g_y, f_g_z, f_cp_x, f_cp_y, f_cp_z, r_E_x, r_E_y, r_E_z, r_cp_x, r_cp_y, r_cp_z")
-e_0,e_1,e_2,e_3,u,v,w,p,q,r = sp.symbols("e_0,e_1,e_2,e_3,u,v,w,p,q,r")
-e_0_f = sp.Function("e_0", real=True)(t)
-e_1_f = sp.Function("e_1", real=True)(t)
-e_2_f = sp.Function("e_2", real=True)(t)
-e_3_f = sp.Function("e_3", real=True)(t)
-u_f = sp.Function("u", real=True)(t)
-v_f = sp.Function("v", real=True)(t)
-w_f = sp.Function("w", real=True)(t)
-p_f = sp.Function("p", real=True)(t)
-q_f = sp.Function("q", real=True)(t)
-r_f = sp.Function("r", real=True)(t)
-
-f_subs = []
-for item in ("e_0,e_1,e_2,e_3,u,v,w,p,q,r".split(",")):
-    f_subs.append((eval(item), eval(f"{item}_f")))
-
-Gamma_1, Gamma_2, Gamma_3, Gamma_4, Gamma_5, Gamma_6, Gamma_7, Gamma_8, m, J_xx, J_yy, J_zz, J_xz = sp.symbols("Gamma_1, Gamma_2, Gamma_3, Gamma_4, Gamma_5, Gamma_6, Gamma_7, Gamma_8, m, J_xx, J_yy, J_zz, J_xz")
-
-J = Matrix([
-    [ J_xx,    0, -J_xz],
-    [    0, J_yy,     0],
-    [-J_xz,    0,  J_zz]
-])
-
-F_E = Matrix([f_E_x, f_E_y, f_E_z])
-F_g = Matrix([f_g_x, f_g_y, f_g_z])
-F_cp = Matrix([f_cp_x, f_cp_y, f_cp_z])
-r_E = Matrix([r_E_x, r_E_y, r_E_z])
-r_cp = Matrix([r_cp_x, r_cp_y, r_cp_z])
 
 F = F_E + F_g + F_cp
 write(F, "F")
@@ -83,79 +9,363 @@ write(F, "F")
 tau = r_E.cross(F_E) + r_cp.cross(F_cp)
 write(tau, "tau")
 
-# vectors
-x1 = Matrix([u, v, w])
-x2 = Matrix([1])
-x3 = Matrix([e_0, e_1, e_2, e_3])
-x4 = Matrix([1])
 
+F_g = m*g*Matrix([
+    2*(e_1*e_3 - e_2*e_0),
+    2*(e_2*e_3 + e_1*e_0),
+    e_3**2 + e_0**2 - e_1**2 - e_2**2
+])
+
+# update the force to include actual force of gravity
+F = F_E + F_g + F_cp
+write(F, "F_subbed")
+
+# V to V_g
 M1 = Matrix([
     [e_1**2 + e_0**2 - e_2**2 - e_3**2, 2*(e_1*e_2 - e_3*e_0), 2*(e_1*e_3 + e_2*e_0)],
     [2*(e_1*e_2 + e_3*e_0), e_2**2 + e_0**2 - e_1**2 - e_3**2, 2*(e_2*e_3 - e_1*e_0)],
     [2*(e_1*e_3 - e_2*e_0), 2*(e_2*e_3 + e_1*e_0), e_3**2 + e_0**2 - e_1**2 - e_2**2]
 ])
-M2 = Matrix([
-    [r*v - q*w],
-    [p*w - r*u],
-    [q*u - p*v]
-])
-M3 = sp.Rational(1, 2)*Matrix([
+write(M1, "M1")
+
+# e to dot e
+M2 = Rational(1, 2)*Matrix([
     [0, -p, -q, -r],
     [p, 0, r, -q],
     [q, -r, 0, p],
     [r, q, -p, 0]
 ])
-x_acc = Matrix([p, q, r])
-M4 =  Matrix([
-    [Gamma_1*p*q - Gamma_2*q*r],
-    [Gamma_5*p*r - Gamma_6*(p**2 - r**2)],
-    [Gamma_7*p*q - Gamma_1*q*r]
-])
+write(2*M2, "M2")
 
-for item in ["M1", "M2", "M3", "M4"]:
-    write(eval(item), item)
+# dynamics equation
+P_g_dot   =  M1*V
+V_dot     = -1*omega.cross(V) + 1/m*F
+e_dot     =  M2*e
+omega_dot = -1*J.inv()*(omega.cross(J*omega)) + J.inv()*tau
+
+dot_p_n  = P_g_dot[0].subs(vals)
+dot_p_e  = P_g_dot[1].subs(vals)
+dot_p_d  = P_g_dot[2].subs(vals)
+dot_u    = V_dot[0].subs(vals)
+dot_v    = V_dot[1].subs(vals)
+dot_w    = V_dot[2].subs(vals)
+dot_e_0  = e_dot[0].subs(vals)
+dot_e_1  = e_dot[1].subs(vals)
+dot_e_2  = e_dot[2].subs(vals)
+dot_e_3  = e_dot[3].subs(vals)
+dot_p    = omega_dot[0].subs(vals)
+dot_q    = omega_dot[1].subs(vals)
+dot_r    = omega_dot[2].subs(vals)
+
+x_names = "p_n,p_e,p_d,u,v,w,e_0,e_1,e_2,e_3,p,q,r".split(",")
+u_names = "f_E_x,f_E_y,f_E_z,f_cp_x,f_cp_y,f_cp_z,r_cp_x,r_cp_y,r_cp_z".split(",")
+
+f_general = zeros(len(x_names), 1)
+for i in range(len(x_names)):
+    f_general[i] = eval(f"dot_{x_names[i]}")
+
+write(f_general, "f_general")
+
+def computeStateSpace(name, x_vars, u_vars, x_e, x_dot_e = None):
+    space = "  "
+    if x_dot_e is None:
+        x_dot_e_vec = [0 for i in range(len(x_names))]
+    else:
+        # setting equilibrium dot x values to 0 if they are not provided
+        for item in x_names:
+            item = eval(item)
+            if item not in x_dot_e:
+                print(item)
+                # print(2*space + "Adding:", item)
+                x_dot_e[item] = 0
+        
+        x_dot_e_vec  = []
+        for item in x_names:
+            item = eval(item)
+            x_dot_e_vec.append(x_dot_e[item])
+    x_dot_e_vec = Matrix(x_dot_e_vec)
+    print(space+"x_dot_e:")
+    for i in range(len(x_names)):
+        print(2*space + f"{x_names[i]} = {x_dot_e_vec[i]}")
+
+    # getting the x symbolic variables
+    x_vec = [eval(item) for item in x_vars]
+
+    # getting the u symbolic variables
+    u_vec = [eval(item) for item in u_vars]
+
+    # the number of control variables
+    n = len(x_vec)
+    f = zeros(n, 1) # setting up the f in dot x = f(x,u)
+
+    # grabbing the equations
+    for i in range(n): f[i] = eval(f"dot_{x_vars[i]}")
+    write(f, f"{name}_f")
+
+    # setting equilibrium x values to default if they are not provided
+    for item in x_names:
+        item = eval(item)
+        if item not in x_e:
+            # print(2*space + "Adding:", item)
+            x_e[item] = default_values_x[item]
+
+    # making a list of values to substitute for in the equation
+    x_e_subs = []
+    x_e_vec  = []
+    for item in x_names:
+        item = eval(item)
+        x_e_subs.append((item, x_e[item]))
+        x_e_vec.append(x_e[item])
+    write(Matrix(x_e_vec), f"{name}_x_e")
+
+    # printing out equilibrium state
+    print(space+"x_e:")
+    for item in x_e_subs:
+        print(2*space + f"{item[0]} = ", item[1], sep="")
+    
+    # filling in inputs that are not the ones being controlled with the default values
+    u_subs = []
+    for item in u_names:
+        item = eval(item)
+        if item not in u_vec:
+            # print(2*space + f"{item} = ", default_values_u[item], sep="")
+            u_subs.append((item, default_values_u[item]))
+
+    # subbing the values into the general f equation
+    f_e = f_general.subs(x_e_subs + u_subs)
+    print(f_e)
+    write(f_e, f"{name}_f_e")
+    print(space+"Computing u_e")
+    # finding the rest of the inputs
+    u_e = solve(f_e-x_dot_e_vec, u_vec, dict=True)
+
+    if not len(u_e):
+        print("Could not find u_e")
+        exit()
+    else:
+        u_e = u_e[0]
+
+    # filling out the rest of the input solution with the default values
+    for item in u_names:
+        item = eval(item)
+        if item not in u_e:
+            print(2*space + "Adding:", item)
+            u_e[item] = default_values_u[item]
+
+    # making a list of values to substitute for in the equation
+    u_e_subs = []
+    u_e_vec  = []
+    for item in u_names:
+        item = eval(item)
+        u_e_subs.append((item, u_e[item]))
+        u_e_vec.append(u_e[item])
+    write(Matrix(u_e_vec), f"{name}_u_e")
+
+    # printing out equilibrium input
+    print(space+"u_e:")
+    for item in u_e_subs:
+        print(2*space + f"{item[0]} = ", item[1], sep="")
+
+    # computing jacobian of the system with respect to the state, first step to A
+    df_dx = f.jacobian(x_vec)
+    write(df_dx, f"{name}_df_dx")
+
+    # computing jacobian of the system with respect to the input, first step to B
+    df_du = f.jacobian(u_vec)
+    write(df_du, f"{name}_df_du")
+
+    # evaluating at equilibrium to get A
+    A = df_dx.subs(x_e_subs + u_e_subs)
+    write(A, f"{name}_A")
+
+    # evaluating at equilibrium to get B
+    B = df_du.subs(x_e_subs + u_e_subs)
+    write(B, f"{name}_B")
+
+    # computing the controllability matrix
+    C = [(A**i)*B for i in range(0, len(x_e))]
+    CC = Matrix.hstack(*C)
+
+    # printing out the number of rows and the rank (hopefully they are equal)
+    rank = CC.rank()
+    
+    if rank == CC.shape[0]:
+        print(space+"System is controlable")
+        print(2*space+"Rows:", CC.shape[0])
+        print(2*space+"Rank:", rank)
+    else:
+        print(space+"System is NOT controlable, exiting")
+        print(2*space+"Rows:", CC.shape[0])
+        print(2*space+"Rank:", rank)
+        exit()
+    
+    return A.copy(), B.copy(), CC.copy(), Matrix(x_e_vec).copy(), Matrix(u_e_vec).copy()
+
+def landing():
+    print("Landing")
+    # for printing's sake
+    space = "  "
+
+    # variables to control
+    x_vars = "p_n,p_e,p_d,u,v,w,e_0,q".split(",")
+    u_vars = "f_E_x,f_E_y,f_E_z".split(",")
+    n = len(x_vars)
+
+    # write(f, "f_x_u")
+    #### for landing 
+
+    phi_e   = rad(0)  # dont care, pick 0
+    theta_e = rad(90) # has to be this
+    psi_e   = rad(0)  # dont care, pick 0
+    print(space+"Quaternion:",Euler2Quaternion(phi_e, theta_e, psi_e))
+
+    x_e = {
+        e_0 : Euler2Quaternion(phi_e, theta_e, psi_e)[0],
+        e_1 : Euler2Quaternion(phi_e, theta_e, psi_e)[1],
+        e_2 : Euler2Quaternion(phi_e, theta_e, psi_e)[2],
+        e_3 : Euler2Quaternion(phi_e, theta_e, psi_e)[3]
+    }
+
+    A, B, CC, x_e, u_e = computeStateSpace("landing", x_vars, u_vars, x_e)
+    C = eye(n)
+    # print("A =", A)
+    # print("B =", B)
+    # print("x_e =", x_e)
+    # print("u_e =", u_e)
+    
+    writeMathModule("landing", A=A, B=B, C=C, x_e=x_e, u_e=u_e)
+
+
+landing()
+exit()
+    # K = (alpha - a_A)*A_A.inv()
+
+
+def flipCP():
+    print("flipCP")
+    # for printing's sake
+    space = "  "
+
+    # variables to control
+    x_vars = "p_n,p_e,u,v,w,e_0,e_3,q,r".split(",")
+    u_vars = "f_E_x,f_E_y,f_E_z,r_cp_x,r_cp_y,r_cp_z".split(",")
+    n = len(x_vars)
+
+    # write(f, "f_x_u")
+    #### for landing 
+
+    phi_e   = rad(0)  # dont care, pick 0
+    theta_e = rad(90) # has to be this
+    psi_e   = rad(0)  # dont care, pick 0
+    print(space+"Quaternion:",Euler2Quaternion(phi_e, theta_e, psi_e))
+
+    x_e = {
+        e_0 : Euler2Quaternion(phi_e, theta_e, psi_e)[0],
+        e_1 : Euler2Quaternion(phi_e, theta_e, psi_e)[1],
+        e_2 : Euler2Quaternion(phi_e, theta_e, psi_e)[2],
+        e_3 : Euler2Quaternion(phi_e, theta_e, psi_e)[3]
+    }
+    print(x_e)
+
+
+    A, B, CC, x_e, u_e = computeStateSpace("flipCP", x_vars, u_vars, x_e)
+    C = eye(n)
+    # print("A =", A)
+    # print("B =", B)
+    # print("x_e =", x_e)
+    # print("u_e =", u_e)
+
+    writeMathModule("flipCP", A=A, B=B, C=C, x_e=x_e, u_e=u_e)
+
+flipCP()
+
+
+def descentCP():
+    print("DescentCP")
+    # for printing's sake
+    space = "  "
+
+    # variables to control
+    x_vars = "p_n,p_e,u,v,e_1,e_2,p,q".split(",")
+    u_vars = "f_cp_x,f_cp_y,f_cp_z,r_cp_x,r_cp_y,r_cp_z".split(",")
+    n = len(x_vars)
+
+    # write(f, "f_x_u")
+    #### for landing 
+
+    phi_e   = rad(0)  # dont care, pick 0
+    theta_e = rad(0) # has to be this
+    psi_e   = rad(0)  # dont care, pick 0
+    print(space+"Quaternion:",Euler2Quaternion(phi_e, theta_e, psi_e))
+
+    x_e = {
+        w   : 50,
+        e_0 : Euler2Quaternion(phi_e, theta_e, psi_e)[0],
+        e_1 : Euler2Quaternion(phi_e, theta_e, psi_e)[1],
+        e_2 : Euler2Quaternion(phi_e, theta_e, psi_e)[2],
+        e_3 : Euler2Quaternion(phi_e, theta_e, psi_e)[3]
+    }
+    print(x_e)
+    # exit()
+    x_dot_e = {
+        p_d : 50
+    }
+
+
+    A, B, CC, x_e, u_e = computeStateSpace("descentCP", x_vars, u_vars, x_e, x_dot_e)
+    C = eye(n)
+    # print("A =", A)
+    # print("B =", B)
+    # print("x_e =", x_e)
+    # print("u_e =", u_e)
+
+    writeMathModule("descentCP", A=A, B=B, C=C, x_e=x_e, u_e=u_e)
+
+descentCP()
 
 
 
-for item in ["x1", "x2", "x3", "x4"]:
-    write(eval(item), item)
+"""
+s = Symbol("s")
+    sI_minus_A = s*eye(n) - A
+    write(sI_minus_A, "sI_minus_A")
 
-# tau = [l, m, n]
+    Delta_ol = Poly(sI_minus_A.det(), s)
+    a_A = Delta_ol.all_coeffs()
+    print(a_A)
+    if a_A[0] != 1:
+        print(space+"Normalizing Delta_ol to get leading coef. of 1, current coef. is", a_A[0])
+        Delta_ol = Delta_ol/a_A[0]
+        a_A = Delta_ol.all_coeffs()
+    
+    A_A = eye(n)
+    for i in range(n):
+        for j in range(i+1, n):
+            A_A[i,j] = a_A[-(j-i)]
+    # print(A_A)
 
-B1_F = sp.zeros(3, 3)
-B1_tau = sp.zeros(3, 3)
+    # must have length n
+    p = -1*Rational(1, 2)*ones(n, 1)
+    # print(p)
 
-B2_F = 1/m*sp.eye(3)
-B2_tau = sp.zeros(3, 3)
+    if len(p) != n:
+        print("p (list of poles) does not have the right length")
+        exit()
+    
+    Delta_cl = 1
+    for i in range(n):
+        Delta_cl*=(s - p[i])
+    Delta_cl = Poly(Delta_cl, s)
 
-B3_F = sp.zeros(4, 3)
-B3_tau = sp.zeros(4, 3)
+    alpha = Delta_cl.all_coeffs()
+    print(alpha)
+    if alpha[0] != 1:
+        print(space+"Normalizing Delta_cl to get leading coef. of 1, current coef. is", alpha[0])
+        Delta_cl = Delta_cl/alpha[0]
+        alpha = Delta_cl.all_coeffs()
+    
+    a_A   = Matrix(a_A).T
+    alpha = Matrix(alpha).T
+    print(alpha, a_A)
 
-B4_F = sp.zeros(3, 3)
-B4_tau = Matrix([
-    [Gamma_3, 0, Gamma_4],
-    [0, 1/J_yy, 0],
-    [Gamma_4, 0, Gamma_8]
-])
-
-for item in ["B1", "B2", "B3", "B4"]:
-    for suf in ["F", "tau"]:
-        temp = f"{item}_{suf}"
-        write(eval(temp), temp)
-
-# write(J.inv(), "J_inv")
-# x_acc = Matrix([p, q, r])
-
-# M4_acc = -1*J.inv()*x_acc.cross(J*x_acc)
-# write(M4_acc, "M4_acc")
-
-# B4 = Matrix([
-#     [Gamma_3*l + Gamma_4*n],
-#     [1/J_yy*m],
-#     [Gamma_4*l + Gamma_8*n]
-# ])
-# state = [p_n p_e p_d  u  v  w  e_0  e_1  e_2  e_3  p  q  r]
-#b1 = M1*x1 + B1_F*F + B1_tau*tau
-#b2 = M2*x2 + B2_F*F + B2_tau*tau
-#b3 = M3*x3 + B3_F*F + B3_tau*tau
-#b4 = M4*x4 + B4_F*F + B4_tau*tau
+"""
