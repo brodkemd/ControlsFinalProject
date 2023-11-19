@@ -1,1 +1,0 @@
-\left[\begin{matrix}0 & 0 & 0 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 0 & 0\\\frac{1}{m} & 0 & 0 & 0 & 0 & 0\\0 & \frac{1}{m} & 0 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 0 & 0\\0 & - \frac{R}{J_{xx}} & 0 & 0 & - \frac{g m}{J_{xx}} & 0\\\frac{R}{J_{yy}} & 0 & 0 & \frac{g m}{J_{yy}} & 0 & 0\end{matrix}\right]

@@ -237,7 +237,7 @@ def landing():
 
 
 landing()
-
+exit()
     # K = (alpha - a_A)*A_A.inv()
 
 

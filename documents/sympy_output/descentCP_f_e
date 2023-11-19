@@ -1,1 +1,0 @@
-\left[\begin{matrix}0\\0\\50\\\frac{f_{cp x}}{m}\\\frac{f_{cp y}}{m}\\\frac{f_{cp z} + g m}{m}\\0\\0\\0\\0\\\frac{- f_{cp y} r_{cp z} + f_{cp z} r_{cp y}}{J_{xx}}\\\frac{f_{cp x} r_{cp z} - f_{cp z} r_{cp x}}{J_{yy}}\\\frac{- f_{cp x} r_{cp y} + f_{cp y} r_{cp x}}{J_{zz}}\end{matrix}\right]
