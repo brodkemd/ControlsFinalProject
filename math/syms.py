@@ -68,6 +68,8 @@ write(f_general, "f_general")
 
 def computeStateSpace(name, x_vars, u_vars, x_e, x_dot_e = None):
     space = "  "
+
+    # sets up the dot x at equilibrium vector
     if x_dot_e is None:
         x_dot_e_vec = [0 for i in range(len(x_names))]
     else:
@@ -83,6 +85,7 @@ def computeStateSpace(name, x_vars, u_vars, x_e, x_dot_e = None):
         for item in x_names:
             item = eval(item)
             x_dot_e_vec.append(x_dot_e[item])
+    
     x_dot_e_vec = Matrix(x_dot_e_vec)
     print(space+"x_dot_e:")
     for i in range(len(x_names)):
@@ -98,7 +101,7 @@ def computeStateSpace(name, x_vars, u_vars, x_e, x_dot_e = None):
     n = len(x_vec)
     f = zeros(n, 1) # setting up the f in dot x = f(x,u)
 
-    # grabbing the equations
+    # grabbing the equations that pertain to these parameters
     for i in range(n): f[i] = eval(f"dot_{x_vars[i]}")
     write(f, f"{name}_f")
 
@@ -166,11 +169,25 @@ def computeStateSpace(name, x_vars, u_vars, x_e, x_dot_e = None):
     for item in u_e_subs:
         print(2*space + f"{item[0]} = ", item[1], sep="")
 
-    # computing jacobian of the system with respect to the state, first step to A
+    # # computing jacobian of the system with respect to the state, first step to A
+    # x_jacobian_subs = []
+    # for item in x_names:
+    #     item = eval(item)
+    #     if item not in x_vec:
+    #         x_jacobian_subs.append((item, default_values_x[item]))
+    
+    # u_jacobian_subs = []
+    # for item in u_names:
+    #     item = eval(item)
+    #     if item not in u_vec:
+    #         u_jacobian_subs.append((item, default_values_u[item]))
+
+    # f = f.subs(x_jacobian_subs + u_jacobian_subs)
     df_dx = f.jacobian(x_vec)
     write(df_dx, f"{name}_df_dx")
 
     # computing jacobian of the system with respect to the input, first step to B
+    
     df_du = f.jacobian(u_vec)
     write(df_du, f"{name}_df_du")
 
@@ -183,7 +200,7 @@ def computeStateSpace(name, x_vars, u_vars, x_e, x_dot_e = None):
     write(B, f"{name}_B")
 
     # computing the controllability matrix
-    C = [(A**i)*B for i in range(0, len(x_e))]
+    C = [(A**i)*B for i in range(n)]
     CC = Matrix.hstack(*C)
 
     # printing out the number of rows and the rank (hopefully they are equal)
@@ -207,7 +224,7 @@ def landing():
     space = "  "
 
     # variables to control
-    x_vars = "p_n,p_e,p_d,u,v,w,e_0,q".split(",")
+    x_vars = "p_n,p_e,p_d,u,v,w,e_0,e_3,q,r".split(",")
     u_vars = "f_E_x,f_E_y,f_E_z".split(",")
     n = len(x_vars)
 
@@ -228,11 +245,7 @@ def landing():
 
     A, B, CC, x_e, u_e = computeStateSpace("landing", x_vars, u_vars, x_e)
     C = eye(n)
-    # print("A =", A)
-    # print("B =", B)
-    # print("x_e =", x_e)
-    # print("u_e =", u_e)
-    
+
     writeMathModule("landing", A=A, B=B, C=C, x_e=x_e, u_e=u_e)
 
 
