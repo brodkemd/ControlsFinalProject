@@ -66,10 +66,10 @@ class BaseFullStateFeedBack:
             if compute_gains:
                 print("Can not compute gains without linux")
 
-        print("Loading gain matrix:", end=" ")
+        print(f"Loading gain matrix for '{name}':", end=" ")
         mat_data = scipy.io.loadmat(f"{file_stem}.mat")
         print("Done")
-        K   = mat_data["K"]
+        K    = mat_data["K"]
         prec = mat_data["prec"].item(0)
         print(f"  Gains have a decimal precision of: {prec}")
         
