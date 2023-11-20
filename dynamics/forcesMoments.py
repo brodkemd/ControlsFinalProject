@@ -22,14 +22,16 @@ class CPFromAerodynamics:
        
         pass
 
-    def update(self, M, AOA, B, delSurf):
+    def update(self, M, AOA, B, delSurf, delT):
         '''
         Inputs:
         M = Current Mach
         AOA = Current AOA [deg]
         B = Current sideslip, beta [deg]
         delSurf = Array of control surface deflections [delPortCanard, delStarCanard, delPortFin, delStarFin]
-        
+        delT = Throttle percentage of full throttle (can come from controller) [0,1] array: [delTx, delTy, delTz]
+        delE = Array of engine deflections [deflection from x-axis, rotation]
+
         '''
         # Defines the coefficients based on the current Mach and AOA
         Cd = self.Cdf(0) + self.Cdf(1)*M + self.Cdf(2)*AOA + self.Cdf(3)*M**2 + self.Cdf(4)*M*AOA + self.Cdf(5)*AOA**2 + self.Cdf(6)*(M**2)*AOA + self.Cdf(7)*M*(AOA**2) + self.Cdf(8)*AOA**3
@@ -71,10 +73,10 @@ class CPFromAerodynamics:
         Fsy = Fpcy + Fscy + Fpfy + Fsfy
         Fsz = Fpcz + Fscz + Fpfz + Fsfz
 
-        # #Engine forces
-        # FEx = BODY.maxThrust*delT(0)
-        # FEy = BODY.maxThrust*delT(1)
-        # FEz = BODY.maxThrust*delT(2)
+        #Engine forces
+        FEx = BODY.maxThrust*delT(0)
+        FEy = BODY.maxThrust*delT(1)
+        FEz = BODY.maxThrust*delT(2)
 
         # radii vectors of all the surfaces (from COM)
         # Port Canard [rpc] = (15.25, -6.535, 0) (x,y,z)
@@ -86,7 +88,7 @@ class CPFromAerodynamics:
         rpf = np.array([-19.375, 6.75, 0])
         rsf = np.array([-19.375, -6.75, 0])
         rb = np.array([0.0, 0.0, 0.0])
-
+        
 
         return 
 
