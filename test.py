@@ -48,6 +48,5 @@ from controller.fullStateFeedback import Flip, Descent, Landing
 
 # exit()
 obj = Landing()
-
 obj = Descent()
 obj = Flip()

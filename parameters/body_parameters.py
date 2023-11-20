@@ -27,7 +27,7 @@ J = np.array([
     [-J_xz, -J_yz,  J_zz]
 ], dtype=float)
 
-r_E_x = 10.0
+r_E_x = -10.0
 r_E_y = 0.0
 r_E_z = 0.0
 
