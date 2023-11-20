@@ -3,11 +3,16 @@ import numpy as np
 mass = 100.0
 gravity = 9.81
 Aref = 1413.72 #Starship reference area, m^2
-R = 1.0
+AsurfC = 15.81 #Canard ref area, m^2
+AsurfF = 45.39 #Fin ref area, m^2
+maxThrust = 9578.342 #N
+
 # Atmospheric Parameters
-# rhoAvg = 0.016164897 #kg/m^3
-# gamma = 1.29
-# gravity = 3.73 #m/s^2
+rhoAvg = 0.016164897 #kg/m^3
+gamma = 1.29
+gravity = 3.73 #m/s^2
+R = 192.0092 # Martian atmospheric gas constant, J/kgK
+Tavg = 210 #Martian atmospheric temp, K
 
 J_xx = 12814.379
 J_yy = 940258.811
