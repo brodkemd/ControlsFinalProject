@@ -41,9 +41,9 @@ class CPFromAerodynamics:
         V = M*(BODY.gamma*BODY.R*BODY.Tavg)
         # Calculates the forces for the body and the control surfaces
         # body forces
-        Fxb = (-Cd*np.cos(AOA) - Cl*np.sin(AOA))*(0.5*BODY.rhoAvg*(V**2)*BODY.Aref)*np.cos(B)
-        Fyb = (-Cd*np.cos(AOA) - Cl*np.sin(AOA))*(0.5*BODY.rhoAvg*(V**2)*BODY.Aref)*np.sin(B)
-        Fzb = (-Cd*np.sin(AOA) - Cl*np.cos(AOA))*(0.5*BODY.rhoAvg*(V**2)*BODY.Aref)
+        Fbx = (-Cd*np.cos(AOA) - Cl*np.sin(AOA))*(0.5*BODY.rhoAvg*(V**2)*BODY.Aref)*np.cos(B)
+        Fby = (-Cd*np.cos(AOA) - Cl*np.sin(AOA))*(0.5*BODY.rhoAvg*(V**2)*BODY.Aref)*np.sin(B)
+        Fbz = (-Cd*np.sin(AOA) - Cl*np.cos(AOA))*(0.5*BODY.rhoAvg*(V**2)*BODY.Aref)
 
         # surface forces 
         # Defines the surface coefficients [delPortCanard, delStarCanard, delPortFin, delStarFin]
@@ -88,9 +88,36 @@ class CPFromAerodynamics:
         rpf = np.array([-19.375, 6.75, 0])
         rsf = np.array([-19.375, -6.75, 0])
         rb = np.array([0.0, 0.0, 0.0])
+        re = BODY.r_E
         
+        # Sets the force vectors
+        Fpc = np.array([Fpcx,Fpcy,Fpcz])
+        Fsc = np.array([Fscx,Fscy,Fscz])
+        Fpf = np.array([Fpfx,Fpfy,Fpfz])
+        Fsf = np.array([Fsfx,Fsfy,Fsfz])
+        Fb = np.array([Fbx, Fby, Fbz])
+        Fe = np.array([FEx, FEy, FEz])
 
-        return 
+        # Calculates the radius vector of the center of pressure
+        PortCanard = np.cross(Fpc,np.cross(rpc,Fpc))
+        StarCanard = np.cross(Fsc,np.cross(rsc,Fsc))
+        PortFin = np.cross(Fpf,np.cross(rpf,Fpf))
+        StarFin = np.cross(Fsf,np.cross(rsf,Fsf))
+        normSqr = (np.linalg.norm(np.array([Fsx,Fsy,Fsz])))**2 
+        COPrad = (PortCanard + StarCanard + PortFin + StarFin)/normSqr
+
+        # Calculates the total forces and moments
+        # Forces (just body acting at COM)
+        F = Fb
+        # Moments (surface + engine torques)
+        Me = np.cross(re,Fe)
+        Mpc = np.cross(rpc,Fpc)
+        Msc = np.cross(rsc,Fsc)
+        Mpf = np.cross(rpf,Fpf)
+        Msf = np.cross(rsf,Fsf)
+        M = Me + Mpc + Msc + Mpf + Msf
+
+        return F, M, COPrad
 
 
 class ForcesMomentsFromCP:
