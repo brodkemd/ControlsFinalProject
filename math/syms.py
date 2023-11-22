@@ -1,7 +1,7 @@
 from syms_vars import *
 from sympy import Rational, rad, zeros, solve
 from syms_tools import write, Euler2Quaternion, writeMathModule
-
+import time
 
 F = F_E + F_g + F_cp
 write(F, "F")
@@ -183,13 +183,16 @@ def computeStateSpace(name, x_vars, u_vars, x_e, x_dot_e = None):
     #         u_jacobian_subs.append((item, default_values_u[item]))
 
     # f = f.subs(x_jacobian_subs + u_jacobian_subs)
+    print("  Computing x jacobian:", end=" ")
     df_dx = f.jacobian(x_vec)
     write(df_dx, f"{name}_df_dx")
+    print("done")
 
     # computing jacobian of the system with respect to the input, first step to B
-    
+    print("  Computing u jacobian:", end=" ")
     df_du = f.jacobian(u_vec)
     write(df_du, f"{name}_df_du")
+    print("done")
 
     # evaluating at equilibrium to get A
     A = df_dx.subs(x_e_subs + u_e_subs)
@@ -199,12 +202,17 @@ def computeStateSpace(name, x_vars, u_vars, x_e, x_dot_e = None):
     B = df_du.subs(x_e_subs + u_e_subs)
     write(B, f"{name}_B")
 
+    print("  Computing Controllability Matrix:", end=" ")
     # computing the controllability matrix
     C = [(A**i)*B for i in range(n)]
     CC = Matrix.hstack(*C)
+    print("done")
 
     # printing out the number of rows and the rank (hopefully they are equal)
+    print("  Computing Controllability Matrix Rank:")
+    time.sleep(0.5)
     rank = CC.rank()
+    print("    done")
     
     if rank == CC.shape[0]:
         print(space+"System is controlable")
@@ -217,6 +225,84 @@ def computeStateSpace(name, x_vars, u_vars, x_e, x_dot_e = None):
         exit()
     
     return A.copy(), B.copy(), CC.copy(), Matrix(x_e_vec).copy(), Matrix(u_e_vec).copy()
+
+
+def computeTransforms(x_vars, u_vars, reference_params, x_e):
+    n = len(x_vars)
+    global_x_to_local_x = zeros(len(x_vars), len(x_names))
+    for i in range(len(x_vars)):
+        for j in range(len(x_names)):
+            if x_vars[i] == x_names[j]:
+                global_x_to_local_x[i,j] = 1
+    
+    global_x_r_to_local_x_r = zeros(len(reference_params), len(x_names))
+    for i in range(len(reference_params)):
+        for j in range(len(x_names)):
+            if reference_params[i] == x_names[j]:
+                global_x_r_to_local_x_r[i,j] = 1
+
+    local_u_to_global_u = zeros(len(u_names), len(u_vars))
+    for i in range(len(u_names)):
+        for j in range(len(u_vars)):
+            if u_names[i] == u_vars[j]:
+                local_u_to_global_u[i,j] = 1
+
+    C_r    =  zeros(len(reference_params), n)
+    for i in range(len(x_vars)):
+        if x_vars[i] in reference_params:
+            C_r[reference_params.index(x_vars[i]),i] = 1
+    
+    y_re = zeros(len(reference_params), 1)
+    for i in range(len(reference_params)):
+        item = eval(reference_params[i])
+        if item in x_e:
+            y_re[i] = x_e[item]
+    
+    
+
+    return global_x_to_local_x, global_x_r_to_local_x_r, local_u_to_global_u, C_r, y_re
+
+
+
+
+
+
+def descentCP():
+    print("DescentCP")
+    # for printing's sake
+    space = "  "
+
+    # variables to control
+    x_vars = "p_n,p_e,u,v,e_1,e_2,p,q,r".split(",")
+    u_vars = "f_cp_x,f_cp_y,f_cp_z,r_cp_x,r_cp_y,r_cp_z".split(",")
+    n = len(x_vars)
+
+    reference_params:list = "p_n,p_e,e_1,e_2".split(",") # must be same length as u_vars
+
+    phi_e   = rad(5) # has to be this
+    theta_e = rad(5) # has to be this
+    psi_e   = rad(5)  # dont care, pick 0
+    print(space+"Quaternion:",Euler2Quaternion(phi_e, theta_e, psi_e))
+
+    x_e = {
+        # w   : 50,
+        e_0 : Euler2Quaternion(phi_e, theta_e, psi_e)[0],
+        e_1 : Euler2Quaternion(phi_e, theta_e, psi_e)[1],
+        e_2 : Euler2Quaternion(phi_e, theta_e, psi_e)[2],
+        e_3 : Euler2Quaternion(phi_e, theta_e, psi_e)[3]
+    }
+
+    # x_dot_e = {
+    #     p_d : 50
+    # }
+
+    A, B, CC, x_e, u_e = computeStateSpace("descentCP", x_vars, u_vars, x_e)#, x_dot_e)
+    global_x_to_local_x, global_x_r_to_local_x_r, local_u_to_global_u, C_r, y_re = computeTransforms(x_vars, u_vars, reference_params, x_e)
+
+    writeMathModule("descentCP", A=A, B=B, C_r=C_r, x_e=x_e, u_e=u_e, y_re=y_re, global_x_to_local_x=global_x_to_local_x, global_x_r_to_local_x_r=global_x_r_to_local_x_r, local_u_to_global_u=local_u_to_global_u)
+
+descentCP()
+
 
 def landing():
     print("Landing")
@@ -250,17 +336,13 @@ def landing():
     }
 
     A, B, CC, x_e, u_e = computeStateSpace("landing", x_vars, u_vars, x_e)
-    y_re = zeros(len(reference_params), 1)
-    for i in range(len(reference_params)):
-        item = eval(reference_params[i])
-        if item in x_e:
-            y_re[i] = x_e[item]
+    global_x_to_local_x, global_x_r_to_local_x_r, local_u_to_global_u, C_r, y_re = computeTransforms(x_vars, u_vars, reference_params, x_e)
 
-    writeMathModule("landing", A=A, B=B, C_r=C_r, x_e=x_e, u_e=u_e, y_re=y_re)
+    writeMathModule("landing", A=A, B=B, C_r=C_r, x_e=x_e, u_e=u_e, y_re=y_re, global_x_to_local_x=global_x_to_local_x, global_x_r_to_local_x_r=global_x_r_to_local_x_r, local_u_to_global_u=local_u_to_global_u)
 
 
 
-landing()
+# landing()
 
 
 
@@ -276,12 +358,6 @@ def flipCP():
 
     reference_params:list = "u,v,e_0,e_3,q,r".split(",") # must be same length as u_vars
 
-    C_r    =  zeros(len(reference_params), n)
-    for i in range(len(x_vars)):
-        if x_vars[i] in reference_params:
-            C_r[reference_params.index(x_vars[i]),i] = 1
-
-
     phi_e   = rad(0)  # dont care, pick 0
     theta_e = rad(90) # has to be this
     psi_e   = rad(0)  # dont care, pick 0
@@ -295,67 +371,13 @@ def flipCP():
     }
 
     A, B, CC, x_e, u_e = computeStateSpace("flipCP", x_vars, u_vars, x_e)
-    y_re = zeros(n, 1)
-    for i in range(len(reference_params)):
-        item = eval(reference_params[i])
-        if item in x_e:
-            y_re[i] = x_e[item]
+    global_x_to_local_x, global_x_r_to_local_x_r, local_u_to_global_u, C_r, y_re = computeTransforms(x_vars, u_vars, reference_params, x_e)
 
-    writeMathModule("flipCP", A=A, B=B, C_r=C_r, x_e=x_e, u_e=u_e, y_re=y_re)
+    writeMathModule("flipCP", A=A, B=B, C_r=C_r, x_e=x_e, u_e=u_e, y_re=y_re, global_x_to_local_x=global_x_to_local_x, global_x_r_to_local_x_r=global_x_r_to_local_x_r, local_u_to_global_u=local_u_to_global_u)
 
 
 
-flipCP()
-
-
-
-def descentCP():
-    print("DescentCP")
-    # for printing's sake
-    space = "  "
-
-    # variables to control
-    x_vars = "p_n,p_e,u,v,e_1,e_2,p,q".split(",")
-    u_vars = "f_cp_x,f_cp_y,f_cp_z,r_cp_x,r_cp_y,r_cp_z".split(",")
-    n = len(x_vars)
-
-    reference_params:list = "p_n,p_e,e_1,e_2".split(",") # must be same length as u_vars
-
-    C_r    =  zeros(len(reference_params), n)
-    for i in range(len(x_vars)):
-        if x_vars[i] in reference_params:
-            C_r[reference_params.index(x_vars[i]),i] = 1
-
-    phi_e   = rad(0) # has to be this
-    theta_e = rad(0) # has to be this
-    psi_e   = rad(0)  # dont care, pick 0
-    print(space+"Quaternion:",Euler2Quaternion(phi_e, theta_e, psi_e))
-
-    x_e = {
-        w   : 50,
-        e_0 : Euler2Quaternion(phi_e, theta_e, psi_e)[0],
-        e_1 : Euler2Quaternion(phi_e, theta_e, psi_e)[1],
-        e_2 : Euler2Quaternion(phi_e, theta_e, psi_e)[2],
-        e_3 : Euler2Quaternion(phi_e, theta_e, psi_e)[3]
-    }
-
-    x_dot_e = {
-        p_d : 50
-    }
-
-    A, B, CC, x_e, u_e = computeStateSpace("descentCP", x_vars, u_vars, x_e, x_dot_e)
-    y_re = zeros(n, 1)
-    for i in range(len(reference_params)):
-        item = eval(reference_params[i])
-        if item in x_e:
-            y_re[i] = x_e[item]
-
-    writeMathModule("descentCP", A=A, B=B, C_r=C_r, x_e=x_e, u_e=u_e, y_re=y_re)
-
-descentCP()
-
-
-
+# flipCP()
 """
 s = Symbol("s")
     sI_minus_A = s*eye(n) - A

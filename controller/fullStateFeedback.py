@@ -1,11 +1,11 @@
-from controller.stateSpace import LandingStateSpace, FlipStateSpaceCP, DescentStateSpaceCP
+from controller.stateSpace import LandingStateSpace, FlipStateSpaceCP, DescentStateSpaceCP, BaseStateSpace
 import numpy as np
 import control, os, platform
 import scipy.io
 
 class BaseFullStateFeedBack:
     def __init__(self) -> None:
-        pass
+        super().__init__()
 
     def generateGains(self, A:np.ndarray, B:np.ndarray, C_r:np.ndarray, poles:list[np.complex64], name:str, compute_gains=True):
         cwd  = os.path.dirname(__file__)
@@ -75,22 +75,55 @@ class BaseFullStateFeedBack:
         prec = mat_data["prec"].item(0)
         print(f"       Gains have a decimal precision of: {prec}")
         # print(np.linalg.inv(A - B @ K) @ B)
-        K_r = -1*np.linalg.inv(C_r @ (np.linalg.inv(A - B @ K) @ B))
+        # print(B)
+        # print()
+        # print(K)
+        # print()
+        # print(B@K)
+        # print()
+        # print(A - B @ K)
+        # print()
+        # print(np.linalg.inv(A - B @ K))
+        # print()
+        # print(np.linalg.inv(A - B @ K) @ B)
+        # print()
+        # print(C_r @ (np.linalg.inv(A - B @ K) @ B))
+        # print(B.shape)
+        # print(C_r.shape)
         
+        try:
+            K_r = -1*np.linalg.inv(C_r @ (np.linalg.inv(A - B @ K) @ B))
+        except Exception as e:
+            print("    Can not compute K_r, returning zeros")
+            K_r = np.zeros((C_r.shape[0], C_r.shape[0]))
+
         return K, K_r
+    
+    def update(self, _x, _x_r):
+        # x_vars = "p_n,p_e,p_d,u,v,w,e_0,e_3,q,r".split(",") # order matters
+        _x_tilde   = _x - self.x_e
+        x_r        = self.global_x_r_to_local_x_r @ _x_r
+        x_tilde    = self.global_x_to_local_x @ _x_tilde
+        y_r_tilde  = x_r - self.y_re
+        
+        u = self.local_u_to_global_u @ (self.K @ x_tilde + self.K_r @ y_r_tilde)
+        return self.u_e - u
 
 
 class FullStateFeedBack:
     def __init__(self, compute_gains=False) -> None:
         print("\nFullStateFeedBack:")
-        self.landing    = Landing(compute_gains)
-        # self.descentCP  = DescentCP(compute_gains)
+        # self.landing    = Landing(compute_gains=False)
+        self.descentCP  = DescentCP(compute_gains)
         # self.flipCP     = FlipCP(compute_gains)
 
         self.state = 0 # 0 = landing, 1 = flip, 2 = descent
 
     def update(self, x, x_r):
-        u = self.landing.update(x, x_r)
+        # returns: f_E_x,f_E_y,f_E_z,f_cp_x,f_cp_y,f_cp_z,r_cp_x,r_cp_y,r_cp_z
+        # u = self.landing.update(x, x_r)
+        u = self.descentCP.update(x, x_r)
+        #u = self.descentCP.update(x, x_r)
         return u[0:3], u[3:6], u[6:9]
 
 
@@ -100,7 +133,7 @@ class DescentCP(DescentStateSpaceCP, BaseFullStateFeedBack):
         super().__init__()
 
         self.zetas    =  0.707*np.ones(len(self.A)//2)
-        self.omega_ns = 0.01*np.array([3.0, 1.5, 2.5, 1.25])
+        self.omega_ns = 0.1*np.array([3.0, 1.5, 2.5, 1.25])
 
         self.t_r = max(2.2/self.omega_ns)
         self.t_s = max(4/(self.zetas[i]*self.omega_ns[i]) for i in range(len(self.zetas)))
@@ -116,9 +149,6 @@ class DescentCP(DescentStateSpaceCP, BaseFullStateFeedBack):
             poles.append(-zeta*omega_n - omega_n*np.sqrt(1 - zeta**2)*1j)
 
         self.K, self.K_r = self.generateGains(self.A, self.B, self.C_r, poles, "descentCP", compute_gains=compute_gains)
-
-    def update(self, x, y_r):
-        return self.u_e - self.K(x - self.x_e) + self.K_r*(y_r - self.y_re)
 
 
 class FlipCP(FlipStateSpaceCP, BaseFullStateFeedBack):
@@ -143,9 +173,6 @@ class FlipCP(FlipStateSpaceCP, BaseFullStateFeedBack):
 
         self.K, self.K_r = self.generateGains(self.A, self.B, self.C_r, poles, "flipCP", compute_gains=compute_gains)
 
-    def update(self, x, y_r):
-        return self.u_e - self.K(x - self.x_e) + self.K_r*(y_r - self.y_re)
-
 
 class Landing(LandingStateSpace, BaseFullStateFeedBack):
     def __init__(self, compute_gains=False) -> None:
@@ -167,14 +194,3 @@ class Landing(LandingStateSpace, BaseFullStateFeedBack):
             poles.append(-zeta*omega_n - omega_n*np.sqrt(1 - zeta**2)*1j)
 
         self.K, self.K_r = self.generateGains(self.A, self.B, self.C_r, poles, "landing", compute_gains=compute_gains)
-
-
-    def update(self, _x, _x_r):
-        # x_vars = "p_n,p_e,p_d,u,v,w,e_0,e_3,q,r".split(",") # order matters
-        _x_tilde   = _x - self.x_e
-        x_tilde    = np.append(  _x_tilde[:7], np.array([  _x_tilde.item(9),   _x_tilde.item(11),   _x_tilde.item(12)]))
-        y_r_tilde  = _x_r[:3] - self.y_re
-        u = np.zeros(9)
-
-        u[0:3] = self.K @ x_tilde + self.K_r @ y_r_tilde
-        return self.u_e - u

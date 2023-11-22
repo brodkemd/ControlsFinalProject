@@ -13,14 +13,14 @@ from controller.fullStateFeedback       import FullStateFeedBack
 
 # use these euler angles to initial quaternion (easiest method)
 phi   = 0
-theta = np.deg2rad(90)
+theta = np.deg2rad(20) # np.deg2rad(90)
 psi   = 0
 
 # defining the initial state
 state = np.array([
     0, # p_n
     0, # p_e
-   -1000, # p_d
+   -10000, # p_d
     0, # u
     0, # v
     0, # w
@@ -67,7 +67,7 @@ if not show_figures:
     mpl.use('Agg')
 
 
-controller = FullStateFeedBack(compute_gains=False)
+controller = FullStateFeedBack(compute_gains=True)
 dynamics   = Dynamics(state)
 forces     = ForcesMomentsFromCP()
 

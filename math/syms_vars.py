@@ -76,6 +76,6 @@ default_values_u = {
     f_cp_z : 0,
     r_cp_x : 0,
     r_cp_y : 0,
-    r_cp_z : R
+    r_cp_z : 1
 }
 
