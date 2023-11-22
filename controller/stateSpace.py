@@ -10,10 +10,11 @@ class BaseStateSpace(Base):
     cwd = os.path.dirname(__file__)
 
     # initializing for convenience
-    A, B, C, x_e, u_e = None, None, None, None, None
+    A, B, C_r, x_e, u_e, y_re = None, None, None, None, None, None
 
     def __init__(self, module_file:str) -> None:
         super().__init__()
+        print(f"    Loading module: '{module_file}'")
         LoadModule(os.path.join(self.cwd, module_file), self)
 
 

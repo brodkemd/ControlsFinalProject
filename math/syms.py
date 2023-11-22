@@ -1,5 +1,5 @@
 from syms_vars import *
-from sympy import Rational, rad, zeros, solve, eye, Symbol, Poly, ones
+from sympy import Rational, rad, zeros, solve
 from syms_tools import write, Euler2Quaternion, writeMathModule
 
 
@@ -224,13 +224,19 @@ def landing():
     space = "  "
 
     # variables to control
-    x_vars = "p_n,p_e,p_d,u,v,w,e_0,e_3,q,r".split(",")
+    x_vars = "p_n,p_e,p_d,u,v,w,e_0,e_3,q,r".split(",") # order matters
     u_vars = "f_E_x,f_E_y,f_E_z".split(",")
-    n = len(x_vars)
+    n      = len(x_vars)
+
+    reference_params:list = "p_n,p_e,p_d".split(",")
+
+    C_r    =  zeros(len(reference_params), n)
+    for i in range(len(x_vars)):
+        if x_vars[i] in reference_params:
+            C_r[reference_params.index(x_vars[i]),i] = 1
 
     # write(f, "f_x_u")
     #### for landing 
-
     phi_e   = rad(0)  # dont care, pick 0
     theta_e = rad(90) # has to be this
     psi_e   = rad(0)  # dont care, pick 0
@@ -244,14 +250,18 @@ def landing():
     }
 
     A, B, CC, x_e, u_e = computeStateSpace("landing", x_vars, u_vars, x_e)
-    C = eye(n)
+    y_re = zeros(len(reference_params), 1)
+    for i in range(len(reference_params)):
+        item = eval(reference_params[i])
+        if item in x_e:
+            y_re[i] = x_e[item]
 
-    writeMathModule("landing", A=A, B=B, C=C, x_e=x_e, u_e=u_e)
+    writeMathModule("landing", A=A, B=B, C_r=C_r, x_e=x_e, u_e=u_e, y_re=y_re)
+
 
 
 landing()
-exit()
-    # K = (alpha - a_A)*A_A.inv()
+
 
 
 def flipCP():
@@ -264,8 +274,13 @@ def flipCP():
     u_vars = "f_E_x,f_E_y,f_E_z,r_cp_x,r_cp_y,r_cp_z".split(",")
     n = len(x_vars)
 
-    # write(f, "f_x_u")
-    #### for landing 
+    reference_params:list = "u,v,e_0,e_3,q,r".split(",") # must be same length as u_vars
+
+    C_r    =  zeros(len(reference_params), n)
+    for i in range(len(x_vars)):
+        if x_vars[i] in reference_params:
+            C_r[reference_params.index(x_vars[i]),i] = 1
+
 
     phi_e   = rad(0)  # dont care, pick 0
     theta_e = rad(90) # has to be this
@@ -278,19 +293,20 @@ def flipCP():
         e_2 : Euler2Quaternion(phi_e, theta_e, psi_e)[2],
         e_3 : Euler2Quaternion(phi_e, theta_e, psi_e)[3]
     }
-    print(x_e)
-
 
     A, B, CC, x_e, u_e = computeStateSpace("flipCP", x_vars, u_vars, x_e)
-    C = eye(n)
-    # print("A =", A)
-    # print("B =", B)
-    # print("x_e =", x_e)
-    # print("u_e =", u_e)
+    y_re = zeros(n, 1)
+    for i in range(len(reference_params)):
+        item = eval(reference_params[i])
+        if item in x_e:
+            y_re[i] = x_e[item]
 
-    writeMathModule("flipCP", A=A, B=B, C=C, x_e=x_e, u_e=u_e)
+    writeMathModule("flipCP", A=A, B=B, C_r=C_r, x_e=x_e, u_e=u_e, y_re=y_re)
+
+
 
 flipCP()
+
 
 
 def descentCP():
@@ -303,10 +319,14 @@ def descentCP():
     u_vars = "f_cp_x,f_cp_y,f_cp_z,r_cp_x,r_cp_y,r_cp_z".split(",")
     n = len(x_vars)
 
-    # write(f, "f_x_u")
-    #### for landing 
+    reference_params:list = "p_n,p_e,e_1,e_2".split(",") # must be same length as u_vars
 
-    phi_e   = rad(0)  # dont care, pick 0
+    C_r    =  zeros(len(reference_params), n)
+    for i in range(len(x_vars)):
+        if x_vars[i] in reference_params:
+            C_r[reference_params.index(x_vars[i]),i] = 1
+
+    phi_e   = rad(0) # has to be this
     theta_e = rad(0) # has to be this
     psi_e   = rad(0)  # dont care, pick 0
     print(space+"Quaternion:",Euler2Quaternion(phi_e, theta_e, psi_e))
@@ -318,21 +338,19 @@ def descentCP():
         e_2 : Euler2Quaternion(phi_e, theta_e, psi_e)[2],
         e_3 : Euler2Quaternion(phi_e, theta_e, psi_e)[3]
     }
-    print(x_e)
-    # exit()
+
     x_dot_e = {
         p_d : 50
     }
 
-
     A, B, CC, x_e, u_e = computeStateSpace("descentCP", x_vars, u_vars, x_e, x_dot_e)
-    C = eye(n)
-    # print("A =", A)
-    # print("B =", B)
-    # print("x_e =", x_e)
-    # print("u_e =", u_e)
+    y_re = zeros(n, 1)
+    for i in range(len(reference_params)):
+        item = eval(reference_params[i])
+        if item in x_e:
+            y_re[i] = x_e[item]
 
-    writeMathModule("descentCP", A=A, B=B, C=C, x_e=x_e, u_e=u_e)
+    writeMathModule("descentCP", A=A, B=B, C_r=C_r, x_e=x_e, u_e=u_e, y_re=y_re)
 
 descentCP()
 

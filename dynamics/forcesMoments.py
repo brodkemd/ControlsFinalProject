@@ -6,6 +6,7 @@ class ForcesMoments:
     def __init__(self) -> None:
         #Need locations from the c.g. of the canards and fins
         self.FMFromCP = ForcesMomentsFromCP()
+        self.CPFromAerodynamics = CPFromAerodynamics()
 
     def update(self):
         pass
@@ -126,7 +127,7 @@ class ForcesMomentsFromCP:
         self.m   = BODY.mass
         self.g   = BODY.gravity
 
-    def update(self, _state, F_E, r_cp, F_cp):
+    def update(self, _state, F_E, F_cp, r_cp):
         e_0     = _state.item(6)
         e_1     = _state.item(7)
         e_2     = _state.item(8)

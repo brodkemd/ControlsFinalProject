@@ -14,18 +14,18 @@ def wrapString(s):
 class DataPlotter:
     special_words       = ["phi", "theta", "psi", "alpha", "beta", "delta", "Omega"]
 
-    inputs = ["Port Canard Angle", "Starboard Canard Angle", "Port Fin Angle", "Starboard Fin Angle", "Thrust", "Omega_in", "Omega_out"]
-    inputs_lengths = np.zeros(len(inputs)).tolist()
+    inputs              = ["f_E_x","f_E_y","f_E_z","f_cp_x","f_cp_y","f_cp_z","r_cp_x","r_cp_y","r_cp_z"]
+    inputs_lengths      = np.zeros(len(inputs)).tolist()
 
-    vars                = ["p_n", "p_e", "p_d", "u", "v", "w", "phi", "theta", "psi", "p", "q", "r", "f_x", "f_y", "f_z", "l", "m", "n"]
-    vars_lengths        = np.zeros(len(vars), dtype=int).tolist()
+    vars                = ["p_n", "p_e", "p_d", "u", "v", "w", "e_0", "e_1", "e_2", "e_3", "p", "q", "r"]
+    vars_lengths        = (2*np.ones(len(vars), dtype=int)).tolist()
 
     layout = (6, 3)
-    dashboard_layout = (2, 4)
+    dashboard_layout = (3, 3)
 
     plot = True
-    dimension_names = ["North", "East", "Down"]
-    colors          = ["tab:blue", "tab:orange", "tab:green"]
+    dimension_names = ["Actual", "Reference"]#, "Down"]
+    colors          = ["tab:blue", "tab:orange"]#, "tab:green"]
 
 
     def __init__(self, width=10, height=8, plot=True, interactive=True) -> None:
@@ -181,7 +181,7 @@ class DataPlotter:
         for i, var in enumerate(self.vars):
             if self.vars_lengths[i]:
                 for j in range(self.vars_lengths[i]):
-                    exec(f"self.{var}_{self.dimension_names[j]}.append(inputs[{i}][{j}])")
+                    exec(f"self.{var}_{self.dimension_names[j]}.append(dynamic_response[{i}][{j}])")
             else:
                 exec(f"self.{var}.append(dynamic_response[{i}])")
 

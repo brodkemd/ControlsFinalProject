@@ -13,14 +13,14 @@ from controller.fullStateFeedback       import FullStateFeedBack
 
 # use these euler angles to initial quaternion (easiest method)
 phi   = 0
-theta = 0
+theta = np.deg2rad(90)
 psi   = 0
 
 # defining the initial state
 state = np.array([
     0, # p_n
     0, # p_e
-    0, # p_d
+   -1000, # p_d
     0, # u
     0, # v
     0, # w
@@ -33,10 +33,12 @@ state = np.array([
     0 # r
 ], dtype=float)
 
+state_reference    = state.copy()
+state_reference[2] = 0
 
-make_output        = 1
+make_output        = 0
 show_figures       = 0
-include_animation  = 1
+include_animation  = 0
 include_plotter    = 0
 write_data_to_file = 1
 
@@ -64,15 +66,13 @@ if not show_figures:
     plt.close('all')
     mpl.use('Agg')
 
-controller = FullStateFeedBack()
-exit()
-dynamics = Dynamics(state)
-forces   = ForcesMomentsFromCP()
-#exit()
+
+controller = FullStateFeedBack(compute_gains=False)
+dynamics   = Dynamics(state)
+forces     = ForcesMomentsFromCP()
 
 
 t = SIM.start_time
-inputs = np.zeros((4, 1))
 count = 0
 
 print("\nProgress:")
@@ -82,10 +82,12 @@ while t < SIM.end_time:
 
     # loop that runs the dynamics
     while t < t_next_plot:
-        u = forces.update(state, np.zeros(3), np.ones(3), np.zeros(3))
-        y = dynamics.update(u) #[0, 0, 0, Euler2Quaternion(0, 0, np.deg2rad(t))]
+        F_E, F_cp, r_cp = controller.update(state, state_reference)
+        # print(F_E)
+        u        = forces.update(state, F_E, F_cp, r_cp)
+        y, crash = dynamics.update(u) #[0, 0, 0, Euler2Quaternion(0, 0, np.deg2rad(t))]
         t += SIM.ts_simulation
-        # Propagate dynamics
+        if crash: break
 
     # updating animation from result of dynamics
     if include_animation:
@@ -93,7 +95,8 @@ while t < SIM.end_time:
 
     # plotting the state variables and forces with respect to time
     if include_plotter or write_data_to_file:
-        plotter.update(t, np.ones(18), np.ones(7))
+        response = [[y.item(i), state_reference.item(i)] for i in range(len(y))]
+        plotter.update(t, response, F_E.tolist() + F_cp.tolist() + r_cp.tolist())
 
     # saving image of figure if on a valid timestep
     if include_plotter and make_output:
@@ -105,7 +108,11 @@ while t < SIM.end_time:
 
     # -------increment time-------------
     count +=1
-    
+
+    if crash:
+        print("Detected crash, exiting simulation loop")
+        break
+
     # progresses bar with stats
     print(round(t, 6), "/", SIM.end_time, end="      \r")
 print()
