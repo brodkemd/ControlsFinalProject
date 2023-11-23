@@ -33,6 +33,8 @@ class CPFromAerodynamics:
         delT = Throttle percentage of full throttle (can come from controller) [0,1] array: [delTx, delTy, delTz]
         delE = Array of engine deflections [deflection from x-axis, rotation]
 
+        Inverted 
+
         '''
         # Defines the coefficients based on the current Mach and AOA
         Cd = self.Cdf(0) + self.Cdf(1)*M + self.Cdf(2)*AOA + self.Cdf(3)*M**2 + self.Cdf(4)*M*AOA + self.Cdf(5)*AOA**2 + self.Cdf(6)*(M**2)*AOA + self.Cdf(7)*M*(AOA**2) + self.Cdf(8)*AOA**3
@@ -47,27 +49,27 @@ class CPFromAerodynamics:
         Fbz = (-Cd*np.sin(AOA) - Cl*np.cos(AOA))*(0.5*BODY.rhoAvg*(V**2)*BODY.Aref)
 
         # surface forces 
-        # Defines the surface coefficients [delPortCanard, delStarCanard, delPortFin, delStarFin]
-        Cds = 2*np.pi*delSurf 
-        Cls = 1.28*np.sin(delSurf)
+        # Defines the surface coefficients from flat plate thy [delPortCanard, delStarCanard, delPortFin, delStarFin]
+        Cls = 2*np.pi*delSurf 
+        Cds = 1.28*np.sin(delSurf)
 
         # Canard forces (portCanard (pc), starboardCanard (sc))
-        Fpcx = (-Cds(1)*np.cos(AOA)*np.cos(B) - Cls(1)*np.sin(AOA)*np.sin(B))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfC)
-        Fpcy = (Cds(1)*np.cos(AOA)*np.sin(B) - Cls(1)*np.sin(AOA)*np.cos(B))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfC)
-        Fpcz = (-Cd(1)*np.sin(AOA))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfC)
+        Fpcx = (-Cds[0]*np.cos(AOA)*np.cos(B) - Cls[0]*np.sin(AOA)*np.sin(B))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfC)
+        Fpcy = (Cds[0]*np.cos(AOA)*np.sin(B) - Cls[0]*np.sin(AOA)*np.cos(B))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfC)
+        Fpcz = (-Cds[0]*np.sin(AOA))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfC)
 
-        Fscx = (-Cds(1)*np.cos(AOA)*np.cos(B) + Cls(1)*np.sin(AOA)*np.sin(B))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfC)
-        Fscy = (Cds(1)*np.cos(AOA)*np.sin(B) + Cls(1)*np.sin(AOA)*np.cos(B))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfC)
-        Fscz = (-Cd(1)*np.sin(AOA))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfC)
+        Fscx = (-Cds[1]*np.cos(AOA)*np.cos(B) + Cls[1]*np.sin(AOA)*np.sin(B))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfC)
+        Fscy = (Cds[1]*np.cos(AOA)*np.sin(B) + Cls[1]*np.sin(AOA)*np.cos(B))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfC)
+        Fscz = (-Cds[1]*np.sin(AOA))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfC)
  
         # Fin forces (portFin (pf), starboardFin (sf))
-        Fpfx = (-Cds(1)*np.cos(AOA)*np.cos(B) - Cls(1)*np.sin(AOA)*np.sin(B))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfF)
-        Fpfy = (Cds(1)*np.cos(AOA)*np.sin(B) - Cls(1)*np.sin(AOA)*np.cos(B))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfF)
-        Fpfz = (-Cd(1)*np.sin(AOA))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfF)
+        Fpfx = (-Cds[2]*np.cos(AOA)*np.cos(B) - Cls[2]*np.sin(AOA)*np.sin(B))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfF)
+        Fpfy = (Cds[2]*np.cos(AOA)*np.sin(B) - Cls[2]*np.sin(AOA)*np.cos(B))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfF)
+        Fpfz = (-Cds[2]*np.sin(AOA))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfF)
 
-        Fsfx = (-Cds(3)*np.cos(AOA)*np.cos(B) + Cls(3)*np.sin(AOA)*np.sin(B))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfF)
-        Fsfy = (Cds(3)*np.cos(AOA)*np.sin(B) + Cls(3)*np.sin(AOA)*np.cos(B))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfF)
-        Fsfz = (-Cd(3)*np.sin(AOA))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfF)
+        Fsfx = (-Cds[3]*np.cos(AOA)*np.cos(B) + Cls[3]*np.sin(AOA)*np.sin(B))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfF)
+        Fsfy = (Cds[3]*np.cos(AOA)*np.sin(B) + Cls[3]*np.sin(AOA)*np.cos(B))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfF)
+        Fsfz = (-Cds[3]*np.sin(AOA))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfF)
         
         # Total forces
         Fsx = Fpcx + Fscx + Fpfx + Fsfx
@@ -75,9 +77,9 @@ class CPFromAerodynamics:
         Fsz = Fpcz + Fscz + Fpfz + Fsfz
 
         #Engine forces
-        FEx = BODY.maxThrust*delT(0)
-        FEy = BODY.maxThrust*delT(1)
-        FEz = BODY.maxThrust*delT(2)
+        FEx = BODY.maxThrust*delT[0]
+        FEy = BODY.maxThrust*delT[1]
+        FEz = BODY.maxThrust*delT[2]
 
         # radii vectors of all the surfaces (from COM)
         # Port Canard [rpc] = (15.25, -6.535, 0) (x,y,z)
@@ -88,7 +90,7 @@ class CPFromAerodynamics:
         rsc = np.array([15.25, -6.535, 0]) 
         rpf = np.array([-19.375, 6.75, 0])
         rsf = np.array([-19.375, -6.75, 0])
-        rb = np.array([0.0, 0.0, 0.0])
+        # rb = np.array([0.0, 0.0, 0.0])
         re = BODY.r_E
         
         # Sets the force vectors
@@ -110,13 +112,15 @@ class CPFromAerodynamics:
         # Calculates the total forces and moments
         # Forces (just body acting at COM)
         F = Fb
+        # Body moment using the Cm eqn (moments only in y-dir)
+        Mb = np.array([0, Cm*(0.5*BODY.rhoAvg*(V**2)*BODY.Aref), 0])
         # Moments (surface + engine torques)
         Me = np.cross(re,Fe)
         Mpc = np.cross(rpc,Fpc)
         Msc = np.cross(rsc,Fsc)
         Mpf = np.cross(rpf,Fpf)
         Msf = np.cross(rsf,Fsf)
-        M = Me + Mpc + Msc + Mpf + Msf
+        M = Me + Mpc + Msc + Mpf + Msf + Mb
 
         return F, M, COPrad
 
