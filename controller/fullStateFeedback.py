@@ -1,9 +1,9 @@
 from controller.stateSpace import LandingStateSpace, FlipStateSpaceCP, DescentStateSpaceCP, BaseStateSpace
 from tools.rotations import Euler2Quaternion, Quaternion2Euler
 from parameters.baseClass import Base
-from tools.toString import arrToStr
+from tools.toString import arrToStr, numToStr
 import numpy as np
-import control, os, platform, warnings
+import control, os, platform, warnings, json
 import scipy.io
 
 warnings.filterwarnings("error")
@@ -11,14 +11,19 @@ warnings.filterwarnings("error")
 class BaseFullStateFeedBack:
     def __init__(self) -> None:
         super().__init__()
+        
 
     def generateGains(self, A:np.ndarray, B:np.ndarray, C_r:np.ndarray, poles:list[np.complex64], name:str, compute_gains=True, CC=None):
         cwd  = os.path.dirname(__file__)
+        data = {}
+        with open("data/user_config.json") as f:
+            data = json.loads(f.read())
+        self.matlab = data["matlab"]
         file_stem = os.path.join(cwd, name)
         
         if len(poles) != len(A): raise ValueError("number of poles must be the same as the number of rows of A")
 
-        if "linux" in platform.system().lower() and compute_gains:
+        if compute_gains:
             print("    Checking Controllability of:", name)
             if CC is None:
                 print("      Computing Controllability Matrix")
@@ -44,7 +49,10 @@ class BaseFullStateFeedBack:
             print("done")
 
             print("    Computing Gains:", end=" ")
-            os.system(f'/usr/local/MATLAB/R2021b/bin/matlab -nodisplay -nosplash -nodesktop -batch "{name}" -sd "{cwd}" > /dev/null')
+            if "linux" in platform.system().lower() and compute_gains:
+                os.system(f'{self.matlab} -nodisplay -nosplash -nodesktop -batch "{name}" -sd "{cwd}" > /dev/null')
+            else:
+                os.system(f'{self.matlab} -nodisplay -nosplash -nodesktop -batch "{name}" -sd "{cwd}"')
             print("done")
         else:
             if compute_gains:
@@ -80,8 +88,8 @@ class BaseFullStateFeedBack:
         print("  Eigenvector Analysis:")
         for i in range(len(poles)):
             if np.iscomplex(poles[i]):
-                print("    pole:", )
-            print("    vector:", vecs[:,i])
+                print("    pole:", numToStr(poles[i], ":.6f"))
+            print("    vector:", arrToStr(vecs[:,i], joins="\n"+13*" ", num_format=":.6f"))
 
 
 class FullStateFeedBack(Base):

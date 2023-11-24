@@ -37,7 +37,7 @@ if not show_figures:
     mpl.use('Agg')
 
 state      = P.initial_state.copy()
-controller = FullStateFeedBack(compute_gains=False)
+controller = FullStateFeedBack(compute_gains=True)
 dynamics   = Dynamics(state)
 forces     = ForcesMoments()
 exit()

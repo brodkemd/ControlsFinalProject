@@ -4,6 +4,7 @@ data/*.jpg
 data/*.png
 data/*.mp4
 data/*.dat
+data/user_config.json
 # data/*.json
 /*.vtu
 /documents/sympy_output/*
