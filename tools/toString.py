@@ -33,3 +33,4 @@ def numToStr(num, format=":.16f"):
             num_str = (f"{{{format}}}+{{{format}}}j").format(num.real, num.imag)
     else:
         num_str = (f"{{{format}}}").format(num)
+    return num_str

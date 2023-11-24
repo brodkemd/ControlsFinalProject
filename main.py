@@ -150,4 +150,5 @@ if "linux" in platform.system().lower():
         
         plt.close()
 else:
-    print("Can not render video on non-linux machines, use the standalone data plotter in tools")
+    if make_output:
+        print("Can not render video on non-linux machines, use the standalone data plotter in tools")

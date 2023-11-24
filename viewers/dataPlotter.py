@@ -122,16 +122,17 @@ class DataPlotter:
 
 
     def formatStringForLatex(self, s:str):
-        components = re.split(r"\s+", s)
-        for j, item in enumerate(components):
-            underscores = re.split(r"_+", item)
-            for i, name in enumerate(underscores):
-                if name in self.special_words:
-                    underscores[i] = f"\\{name}"
-                else:
-                    underscores[i] = f"\\text{{{name}}}"
-            components[j] = "_{".join(underscores) + "}"*(len(underscores)-1)
-        return "$" + "\;".join(components) + "$"
+        return s
+        # components = re.split(r"\s+", s)
+        # for j, item in enumerate(components):
+        #     underscores = re.split(r"_+", item)
+        #     for i, name in enumerate(underscores):
+        #         if name in self.special_words:
+        #             underscores[i] = f"\\{name}"
+        #         else:
+        #             underscores[i] = f"\\text{{{name}}}"
+        #     components[j] = "_{".join(underscores) + "}"*(len(underscores)-1)
+        # return "$" + "\;".join(components) + "$"
 
 
     def createPlot(self):
