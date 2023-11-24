@@ -4,7 +4,7 @@ data/*.jpg
 data/*.png
 data/*.mp4
 data/*.dat
-data/*.json
+# data/*.json
 /*.vtu
 /documents/sympy_output/*
 # Byte-compiled / optimized / DLL files

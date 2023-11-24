@@ -45,12 +45,12 @@ class DataPlotter:
             self.axes:list[plt.Axes]      = []
             self.dashboard:list[plt.Axes] = []
 
-            if isinstance(axes_temp[0], list|np.ndarray):
+            if isinstance(axes_temp[0], np.ndarray) or isinstance(axes_temp[0], list):
                 for j in range(len(axes_temp[0])):
                     for i in range(len(axes_temp)): self.axes.append(axes_temp[i][j])
             else: self.axes = axes_temp.copy().tolist()
             
-            if isinstance(dashboard[0], list|np.ndarray):
+            if isinstance(dashboard[0], np.ndarray) or isinstance(dashboard[0], list):
                 for j in range(len(dashboard)):
                     for i in range(len(dashboard[0])): self.dashboard.append(dashboard[j][i])
             else: self.dashboard = dashboard.copy().tolist()
