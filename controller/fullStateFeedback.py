@@ -3,7 +3,7 @@ from tools.rotations import Euler2Quaternion, Quaternion2Euler
 from parameters.baseClass import Base
 from tools.toString import arrToStr, numToStr
 import numpy as np
-import control, os, platform, warnings, json
+import control, os, platform, warnings, json, subprocess
 import scipy.io
 
 warnings.filterwarnings("error")
@@ -52,7 +52,7 @@ class BaseFullStateFeedBack:
             if "linux" in platform.system().lower() and compute_gains:
                 os.system(f'{self.matlab} -nodisplay -nosplash -nodesktop -batch "{name}" -sd "{cwd}" > /dev/null')
             else:
-                os.system(f'& "{self.matlab}" -nodisplay -nosplash -nodesktop -batch "{name}" -sd "{cwd}"')
+                subprocess.call(f'& "{self.matlab}" -nodisplay -nosplash -nodesktop -batch "{name}" -sd "{cwd}"', shell=True)
             print("done")
         else:
             if compute_gains:
