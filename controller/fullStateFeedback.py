@@ -52,7 +52,7 @@ class BaseFullStateFeedBack:
             if "linux" in platform.system().lower() and compute_gains:
                 os.system(f'{self.matlab} -nodisplay -nosplash -nodesktop -batch "{name}" -sd "{cwd}" > /dev/null')
             else:
-                os.system(f'{self.matlab} -nodisplay -nosplash -nodesktop -batch "{name}" -sd "{cwd}"')
+                os.system(f'& {self.matlab} -nodisplay -nosplash -nodesktop -batch "{name}" -sd "{cwd}"')
             print("done")
         else:
             if compute_gains:
