@@ -16,7 +16,7 @@ class BaseFullStateFeedBack:
     def generateGains(self, A:np.ndarray, B:np.ndarray, C_r:np.ndarray, poles:list[np.complex64], name:str, compute_gains=True, CC=None):
         cwd  = os.path.dirname(__file__)
         data = {}
-        with open(os.path.join(os.path.pardir(cwd), "data", "user_config.json")) as f:
+        with open(os.path.join(os.path.dirname(cwd), "data", "user_config.json")) as f:
             data = json.loads(f.read())
         self.matlab = data["matlab"]
         file_stem = os.path.join(cwd, name)
