@@ -1,3 +1,4 @@
+from tools.rotations import Euler2Quaternion
 import numpy as np
 
 mass = 100.0
@@ -29,9 +30,50 @@ J = np.array([
     [-J_xz, -J_yz,  J_zz]
 ], dtype=float)
 
+# use these euler angles to initial quaternion (easiest method)
+phi   = 0
+theta = np.deg2rad(0) # np.deg2rad(90)
+psi   = 0
+
+# defining the initial state
+initial_state = np.array([
+    0, # p_n
+    0, # p_e
+   -3500, # p_d
+    0, # u
+    0, # v
+    0, # w
+    Euler2Quaternion(phi, theta, psi).item(0), # e_0
+    Euler2Quaternion(phi, theta, psi).item(1), # e_1
+    Euler2Quaternion(phi, theta, psi).item(2), # e_2
+    Euler2Quaternion(phi, theta, psi).item(3), # e_3
+    0, # p
+    0, # q
+    0 # r
+], dtype=float)
+
 r_E_x = -10.0
 r_E_y = 0.0
 r_E_z = 0.0
+
+r_cp_port_canard_x      =  1
+r_cp_port_canard_y      = -1
+r_cp_port_canard_z      =  0
+r_cp_starboard_canard_x =  1
+r_cp_starboard_canard_y =  1
+r_cp_starboard_canard_z =  0
+r_cp_port_fin_x         = -1
+r_cp_port_fin_y         = -1
+r_cp_port_fin_z         =  0
+r_cp_starboard_fin_x    = -1
+r_cp_starboard_fin_y    =  1
+r_cp_starboard_fin_z    =  0
+
+r_cp_port_canard = np.array([r_cp_port_canard_x,r_cp_port_canard_y,r_cp_port_canard_z])
+r_cp_starboard_canard = np.array([r_cp_starboard_canard_x,r_cp_starboard_canard_y,r_cp_starboard_canard_z])
+
+r_cp_port_fin = np.array([r_cp_port_fin_x,r_cp_port_fin_y,r_cp_port_fin_z])
+r_cp_starboard_fin = np.array([r_cp_starboard_fin_x,r_cp_starboard_fin_y,r_cp_starboard_fin_z])
 
 r_E = np.array([r_E_x, r_E_y, r_E_z], dtype=float)
 

@@ -1,10 +1,20 @@
-from sympy import symbols, Matrix, Function
+from sympy import symbols, Matrix
 
-t, m, g, J_xx, J_yy, J_zz, J_xy, J_xz, J_yz, R = symbols("t, m, g, J_xx, J_yy, J_zz, J_xy, J_xz, J_yz, R")
-f_E_x, f_E_y, f_E_z, f_g_x, f_g_y, f_g_z, f_cp_x, f_cp_y, f_cp_z, r_E_x, r_E_y, r_E_z, r_cp_x, r_cp_y, r_cp_z = symbols("f_E_x, f_E_y, f_E_z, f_g_x, f_g_y, f_g_z, f_cp_x, f_cp_y, f_cp_z, r_E_x, r_E_y, r_E_z, r_cp_x, r_cp_y, r_cp_z")
-p_n,p_e,p_d,e_0,e_1,e_2,e_3,u,v,w,p,q,r = symbols("p_n,p_e,p_d,e_0,e_1,e_2,e_3,u,v,w,p,q,r")
+t, m, g, J_xx, J_yy, J_zz, J_xy, J_xz, J_yz, R                          = symbols("t, m, g, J_xx, J_yy, J_zz, J_xy, J_xz, J_yz, R")
+f_E_x, f_E_y, f_E_z, f_g_x, f_g_y, f_g_z, r_E_x, r_E_y, r_E_z           = symbols("f_E_x, f_E_y, f_E_z, f_g_x, f_g_y, f_g_z, r_E_x, r_E_y, r_E_z")
+p_n,p_e,p_d,e_0,e_1,e_2,e_3,u,v,w,p,q,r                                 = symbols("p_n,p_e,p_d,e_0,e_1,e_2,e_3,u,v,w,p,q,r")
 
-Phi, Theta, T = symbols("Phi, Theta, T")
+f_cp_port_canard_x,f_cp_port_canard_y,f_cp_port_canard_z                = symbols("f_cp_port_canard_x,f_cp_port_canard_y,f_cp_port_canard_z")
+f_cp_starboard_canard_x,f_cp_starboard_canard_y,f_cp_starboard_canard_z = symbols("f_cp_starboard_canard_x,f_cp_starboard_canard_y,f_cp_starboard_canard_z")
+
+f_cp_port_fin_x,f_cp_port_fin_y,f_cp_port_fin_z                         = symbols("f_cp_port_fin_x,f_cp_port_fin_y,f_cp_port_fin_z")
+f_cp_starboard_fin_x,f_cp_starboard_fin_y,f_cp_starboard_fin_z          = symbols("f_cp_starboard_fin_x,f_cp_starboard_fin_y,f_cp_starboard_fin_z")
+
+r_cp_port_canard_x,r_cp_port_canard_y,r_cp_port_canard_z                = symbols("r_cp_port_canard_x,r_cp_port_canard_y,r_cp_port_canard_z")
+r_cp_starboard_canard_x,r_cp_starboard_canard_y,r_cp_starboard_canard_z = symbols("r_cp_starboard_canard_x,r_cp_starboard_canard_y,r_cp_starboard_canard_z")
+
+r_cp_port_fin_x,r_cp_port_fin_y,r_cp_port_fin_z                         = symbols("r_cp_port_fin_x,r_cp_port_fin_y,r_cp_port_fin_z")
+r_cp_starboard_fin_x,r_cp_starboard_fin_y,r_cp_starboard_fin_z          = symbols("r_cp_starboard_fin_x,r_cp_starboard_fin_y,r_cp_starboard_fin_z")
 
 J = Matrix([
     [ J_xx, -J_xy, -J_xz],
@@ -20,7 +30,6 @@ r_E_z_val = 0
 
 
 vals = [(J_xy, J_xy_val), (J_xz, J_xz_val), (J_yz, J_yz_val), (r_E_y, r_E_y_val), (r_E_z, r_E_z_val)]
-# J_val = J.subs(vals)
 
 V     = Matrix([u, v, w])
 omega = Matrix([p, q, r])
@@ -28,28 +37,7 @@ e     = Matrix([e_0, e_1, e_2, e_3])
 
 F_E  = Matrix([ f_E_x,  f_E_y,  f_E_z])
 F_g  = Matrix([ f_g_x,  f_g_y,  f_g_z])
-F_cp = Matrix([f_cp_x, f_cp_y, f_cp_z])
 r_E  = Matrix([ r_E_x,  r_E_y,  r_E_z])
-r_cp = Matrix([r_cp_x, r_cp_y, r_cp_z])
-
-
-p_n_f = Function("p_n", real=True)(t)
-p_e_f = Function("p_e", real=True)(t)
-p_d_f = Function("p_d", real=True)(t)
-u_f   = Function("u",   real=True)(t)
-v_f   = Function("v",   real=True)(t)
-w_f   = Function("w",   real=True)(t)
-e_0_f = Function("e_0", real=True)(t)
-e_1_f = Function("e_1", real=True)(t)
-e_2_f = Function("e_2", real=True)(t)
-e_3_f = Function("e_3", real=True)(t)
-p_f   = Function("p",   real=True)(t)
-q_f   = Function("q",   real=True)(t)
-r_f   = Function("r",   real=True)(t)
-
-f_subs = []
-for item in ("p_n,p_e,p_d,e_0,e_1,e_2,e_3,u,v,w,p,q,r".split(",")):
-    f_subs.append((eval(item), eval(f"{item}_f")))
 
 default_values_x = {
     p_n : 0,
@@ -67,15 +55,74 @@ default_values_x = {
     r   : 0
 }
 
+
+# F_cp_body = Matrix([f_cp_body_x,f_cp_body_y,f_cp_body_z])
+
+F_cp_port_canard      = Matrix([      f_cp_port_canard_x,      f_cp_port_canard_y,      f_cp_port_canard_z])
+F_cp_starboard_canard = Matrix([ f_cp_starboard_canard_x, f_cp_starboard_canard_y, f_cp_starboard_canard_z])
+F_cp_port_fin         = Matrix([         f_cp_port_fin_x,         f_cp_port_fin_y,         f_cp_port_fin_z])
+F_cp_starboard_fin    = Matrix([    f_cp_starboard_fin_x,    f_cp_starboard_fin_y,    f_cp_starboard_fin_z])
+
+F_cp_canard = F_cp_port_canard + F_cp_starboard_canard
+F_cp_fin    = F_cp_port_fin + F_cp_starboard_fin
+F_cp        = F_cp_fin + F_cp_canard
+
+# r_cp_body = Matrix([r_cp_body_x,r_cp_body_y,r_cp_body_z])
+r_cp_port_canard        = Matrix([      r_cp_port_canard_x,      r_cp_port_canard_y,      r_cp_port_canard_z])
+r_cp_starboard_canard   = Matrix([ r_cp_starboard_canard_x, r_cp_starboard_canard_y, r_cp_starboard_canard_z])
+r_cp_port_fin           = Matrix([         r_cp_port_fin_x,         r_cp_port_fin_y,         r_cp_port_fin_z])
+r_cp_starboard_fin      = Matrix([    r_cp_starboard_fin_x,    r_cp_starboard_fin_y,    r_cp_starboard_fin_z])
+
+
+tau_cp_port_canard      = r_cp_port_canard.cross(F_cp_port_canard)
+tau_cp_starboard_canard = r_cp_starboard_canard.cross(F_cp_starboard_canard)
+tau_cp_port_fin         = r_cp_port_fin.cross(F_cp_port_fin)
+tau_cp_starboard_fin    = r_cp_starboard_fin.cross(F_cp_starboard_fin)
+
+
+tau_control = tau_cp_port_canard + tau_cp_port_fin + tau_cp_starboard_canard + tau_cp_starboard_fin
+
+# f_cp_port_canard_x_val      = 0
+# f_cp_starboard_canard_x_val = 0
+# f_cp_port_fin_x_val         = 0
+# f_cp_starboard_fin_x_val    = 0
+
+r_cp_port_canard_x_val      =  1
+r_cp_port_canard_y_val      = -1
+r_cp_port_canard_z_val      =  0
+r_cp_starboard_canard_x_val =  1
+r_cp_starboard_canard_y_val =  1
+r_cp_starboard_canard_z_val =  0
+r_cp_port_fin_x_val         = -1
+r_cp_port_fin_y_val         = -1
+r_cp_port_fin_z_val         =  0
+r_cp_starboard_fin_x_val    = -1
+r_cp_starboard_fin_y_val    =  1
+r_cp_starboard_fin_z_val    =  0
+
+names = "f_cp_port_canard_x,f_cp_starboard_canard_x,f_cp_port_fin_x,f_cp_starboard_fin_x,r_cp_body_x,r_cp_body_y,r_cp_body_z,r_cp_port_canard_x,r_cp_port_canard_y,r_cp_port_canard_z,r_cp_starboard_canard_x,r_cp_starboard_canard_y,r_cp_starboard_canard_z,r_cp_port_fin_x,r_cp_port_fin_y,r_cp_port_fin_z,r_cp_starboard_fin_x,r_cp_starboard_fin_y,r_cp_starboard_fin_z".split(",")
+
+for name in names:
+    if f"{name}_val" in vars():
+        vals.append((eval(name), eval(f"{name}_val")))
+
 default_values_u = {
-    f_E_x  : 0,
-    f_E_y  : 0,
-    f_E_z  : 0,
-    f_cp_x : 0,
-    f_cp_y : 0,
-    f_cp_z : 0,
-    r_cp_x : 0,
-    r_cp_y : 0,
-    r_cp_z : 1
+    f_E_x                   : 0,
+    f_E_y                   : 0,
+    f_E_z                   : 0,
+    f_cp_port_canard_x      : 0,
+    f_cp_port_canard_y      : 0,
+    f_cp_port_canard_z      : 0,
+    f_cp_starboard_canard_x : 0,
+    f_cp_starboard_canard_y : 0,
+    f_cp_starboard_canard_z : 0,
+    f_cp_port_fin_x         : 0,
+    f_cp_port_fin_y         : 0,
+    f_cp_port_fin_z         : 0,
+    f_cp_starboard_fin_x    : 0,
+    f_cp_starboard_fin_y    : 0,
+    f_cp_starboard_fin_z    : 0
 }
 
+x_names = "p_n,p_e,p_d,u,v,w,e_0,e_1,e_2,e_3,p,q,r".split(",")
+u_names = "f_E_x,f_E_y,f_E_z,f_cp_port_canard_x,f_cp_port_canard_y,f_cp_port_canard_z,f_cp_starboard_canard_x,f_cp_starboard_canard_y,f_cp_starboard_canard_z,f_cp_port_fin_x,f_cp_port_fin_y,f_cp_port_fin_z,f_cp_starboard_fin_x,f_cp_starboard_fin_y,f_cp_starboard_fin_z".split(",")

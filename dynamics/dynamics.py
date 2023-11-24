@@ -25,10 +25,10 @@ class Dynamics:
         # u       = _state.item(3) # velocity measured along i body
         # v       = _state.item(4) # velocity measured along j body
         # w       = _state.item(5) # velocity measured along k body
-        e_0     = _state.item(6)
-        e_1     = _state.item(7)
-        e_2     = _state.item(8)
-        e_3     = _state.item(9)
+        e_0     = _state.item(6)/np.linalg.norm(_state[6:10])
+        e_1     = _state.item(7)/np.linalg.norm(_state[6:10])
+        e_2     = _state.item(8)/np.linalg.norm(_state[6:10])
+        e_3     = _state.item(9)/np.linalg.norm(_state[6:10])
         p       = _state.item(10) # roll rate measured along i body
         q       = _state.item(11) # pitch rate measured along j body
         r       = _state.item(12) # yaw rate measured along k body
@@ -41,7 +41,7 @@ class Dynamics:
 
         V     = _state[3:6]
         omega = _state[10:13]
-        e     = _state[6:10]
+        e     = _state[6:10]/np.linalg.norm(_state[6:10])
 
         F     = _u[0:3]
         tau   = _u[3:6]
@@ -68,15 +68,19 @@ class Dynamics:
 
     def crashDetect(self):        
         # detects if the velocity when impacting the ground is too high (a crash)
-        #if np.linalg.norm(self.state[3:6]) > self.max_ground_incident_velocity and self.state.item(2) <= 0: return True
+        #if np.linalg.norm(self.state[3:6]) > self.max_ground_incident_velocity and self.state.item(2) >= 0: return True
+        return False
+    
+    def landingDetect(self):
+        # if self.state.item(2) >= 0: return True
         return False
 
     def h(self, u):
         e = self.state[6:10]
-        # if np.linalg.norm(e) != 1.0:
-        #     raise ValueError(f"None unit quaternion detected in dynamics: norm = {np.linalg.norm(e)}")
+        if np.linalg.norm(e) < 1 - 1e-10 or np.linalg.norm(e) > 1 + 1e-10:
+            raise ValueError(f"None unit quaternion detected in dynamics: norm = {np.linalg.norm(e)}")
               
-        return self.state.copy(), self.crashDetect()  
+        return self.state.copy(), self.crashDetect(), self.landingDetect()
 
     def update(self, u):
         # This is the external method that takes the input u(t)
@@ -91,3 +95,4 @@ class Dynamics:
         F3 = self.f(self.state + self.Ts / 2 * F2, u)
         F4 = self.f(self.state + self.Ts * F3, u)
         self.state += self.Ts / 6 * (F1 + 2 * F2 + 2 * F3 + F4)
+        self.state[6:10] = self.state[6:10]/np.linalg.norm(self.state[6:10]) # making sure the quaternion stays unit

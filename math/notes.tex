@@ -90,22 +90,22 @@
 \cfoot{\thepage\ of \pageref{LastPage}}
 
 \begin{document}
-\section{Diagram and Terms}
-\img{0.99}{diagram.png}
+% \section{Diagram and Terms}
+% \img{0.99}{diagram.png}
 
-First, let $F_E = \mat{f_{E_x} \\ f_{E_y} \\ f_{E_z}}$, $F_g = \mat{f_{g_x} \\ f_{g_y} \\ f_{g_z}}$, $F_{cp} = \mat{f_{cp_x} \\ f_{cp_y} \\ f_{cp_z}}$, $\vec{r}_E = \mat{r_{E_x} \\ r_{E_y} \\ r_{E_z}}$, and $\vec{r}_{cp} = \mat{r_{cp_x} \\ r_{cp_y} \\ r_{cp_z}}$. The total force is then,
-\mathse{
-    F = \mat{F_x\\ F_y\\ F_z} = F_E + F_g + F_{cp} = \sinput{F} = \sinput{F_subbed}.
-}
-The torque about the center of gravity is,
-\mathse{
-    \tau = \vec{r}_E \times F_E + \vec{r}_{cp} \times F_{cp} = \sinput{tau} = \sinput{tau_subbed}.
-}
-The value of $\vec{r}_E$ is known to us (where we place the engines). To find $\vec{r}_{cp}$, use the following equation,
-\mathse{
-    \vec{r}_{cp} = -\frac{\left(\sum_{\text{control surfaces}} F_i\right)\times \left(\sum_{\text{control surfaces}} M_i\right)}{\norm{\left(\sum_{\text{control surfaces}} F_i\right)}^2} = -\frac{\left(\sum_{\text{control surfaces}} F_i\right)\times \left(\sum_{\text{control surfaces}} r_i\times F_i\right)}{\norm{\left(\sum_{\text{control surfaces}} F_i\right)}^2}
-}
-the sums take into account the forces at each aerodynamic control surface. 
+% First, let $F_E = \mat{f_{E_x} \\ f_{E_y} \\ f_{E_z}}$, $F_g = \mat{f_{g_x} \\ f_{g_y} \\ f_{g_z}}$, $F_{cp} = \mat{f_{cp_x} \\ f_{cp_y} \\ f_{cp_z}}$, $\vec{r}_E = \mat{r_{E_x} \\ r_{E_y} \\ r_{E_z}}$, and $\vec{r}_{cp} = \mat{r_{cp_x} \\ r_{cp_y} \\ r_{cp_z}}$. The total force is then,
+% \mathse{
+%     F = \mat{F_x\\ F_y\\ F_z} = F_E + F_g + F_{cp} = \sinput{F} = \sinput{F_subbed}.
+% }
+% The torque about the center of gravity is,
+% \mathse{
+%     \tau = \vec{r}_E \times F_E + \vec{r}_{cp} \times F_{cp} = \sinput{tau} = \sinput{tau_subbed}.
+% }
+% The value of $\vec{r}_E$ is known to us (where we place the engines). To find $\vec{r}_{cp}$, use the following equation,
+% \mathse{
+%     \vec{r}_{cp} = -\frac{\left(\sum_{\text{control surfaces}} F_i\right)\times \left(\sum_{\text{control surfaces}} M_i\right)}{\norm{\left(\sum_{\text{control surfaces}} F_i\right)}^2} = -\frac{\left(\sum_{\text{control surfaces}} F_i\right)\times \left(\sum_{\text{control surfaces}} r_i\times F_i\right)}{\norm{\left(\sum_{\text{control surfaces}} F_i\right)}^2}
+% }
+% the sums take into account the forces at each aerodynamic control surface. 
 
 % \section{First Formulation of Dynamics}
 % Using the quaternion representation of dynamics from the back of the book results in and substituting in forces results in,
@@ -137,48 +137,48 @@ the sums take into account the forces at each aerodynamic control surface.
 %     \dot{x} = Ax + B\mat{F\\ \tau}.
 % }
 
-\section{Dynamics}
-From the UAV book page 32 and 34 we know that (these are in body frame),
-\mathse{
-    m\left(\dot{V} + \omega\times V\right) = F\;\;\text{and}\;\; J\dot{\omega} + \omega\times J\omega = \tau,
-}
-where $V = \mat{u & v & w}^T$, $\omega = \mat{p & q & r}^T$, $J$ is the Mass Moment of Inertia tensor. First, handling the force term,
-\mathse{
-    m\left(\dot{V} + \omega\times V\right) = F\\
-    \dot{V} + \omega\times V = \frac{1}{m}F\\
-    \dot{V} = -\omega\times V + \frac{1}{m}F\\
-    \boxed{\mat{\dot{u}\\ \dot{v}\\ \dot{w}} = -\mat{p\\ q\\ r}\times\mat{u\\ v\\ w} + \frac{1}{m}F}.
-}
-Now for the torque term,
-\mathse{
-    J\dot{\omega} + \omega\times J\omega = \tau\\
-    J\dot{\omega}  = \tau - \omega\times J\omega\\
-    \dot{\omega}  = J^{-1}\left(\tau - \omega\times J\omega\right)\\
-    \dot{\omega}  = -J^{-1}\left(\omega\times J\omega\right) + J^{-1}\tau\\
-    \boxed{\mat{\dot{p}\\ \dot{q}\\ \dot{r}}  = -J^{-1}\left(\mat{p\\ q\\ r}\times J\mat{p\\ q\\ r}\right) + J^{-1}\tau}.
-}
-Before showing the equations, let $e = \mat{e_0 & e_1 & e_2 & e_3}^T$ represent the body's unit quaternion and $P_g = \mat{p_n & p_e & p_d}^T$ represent the body's inertial position.
-Using the quaternion representation of dynamics from the back of the book results in and substituting in forces results in,
-\begin{align*}
-    \dot{P}_g &= \sinput{M1}V\\
-    \dot{V} &= -\omega\times V  + \frac{1}{m}F\\
-    \dot{e} &= \sinput{M2}e\\
-    \dot{\omega} &= -J^{-1}\left(\omega\times J\omega\right) + J^{-1}\tau.
-\end{align*}
+% \section{Dynamics}
+% From the UAV book page 32 and 34 we know that (these are in body frame),
+% \mathse{
+%     m\left(\dot{V} + \omega\times V\right) = F\;\;\text{and}\;\; J\dot{\omega} + \omega\times J\omega = \tau,
+% }
+% where $V = \mat{u & v & w}^T$, $\omega = \mat{p & q & r}^T$, $J$ is the Mass Moment of Inertia tensor. First, handling the force term,
+% \mathse{
+%     m\left(\dot{V} + \omega\times V\right) = F\\
+%     \dot{V} + \omega\times V = \frac{1}{m}F\\
+%     \dot{V} = -\omega\times V + \frac{1}{m}F\\
+%     \boxed{\mat{\dot{u}\\ \dot{v}\\ \dot{w}} = -\mat{p\\ q\\ r}\times\mat{u\\ v\\ w} + \frac{1}{m}F}.
+% }
+% Now for the torque term,
+% \mathse{
+%     J\dot{\omega} + \omega\times J\omega = \tau\\
+%     J\dot{\omega}  = \tau - \omega\times J\omega\\
+%     \dot{\omega}  = J^{-1}\left(\tau - \omega\times J\omega\right)\\
+%     \dot{\omega}  = -J^{-1}\left(\omega\times J\omega\right) + J^{-1}\tau\\
+%     \boxed{\mat{\dot{p}\\ \dot{q}\\ \dot{r}}  = -J^{-1}\left(\mat{p\\ q\\ r}\times J\mat{p\\ q\\ r}\right) + J^{-1}\tau}.
+% }
+% Before showing the equations, let $e = \mat{e_0 & e_1 & e_2 & e_3}^T$ represent the body's unit quaternion and $P_g = \mat{p_n & p_e & p_d}^T$ represent the body's inertial position.
+% Using the quaternion representation of dynamics from the back of the book results in and substituting in forces results in,
+% \begin{align*}
+%     \dot{P}_g &= \sinput{M1}V\\
+%     \dot{V} &= -\omega\times V  + \frac{1}{m}F\\
+%     \dot{e} &= \sinput{M2}e\\
+%     \dot{\omega} &= -J^{-1}\left(\omega\times J\omega\right) + J^{-1}\tau.
+% \end{align*}
 
-\section{Linearizing}
-For this section, we will use the general form of the dynamics equations. Let $x = \mat{\dot{p}_n & \dot{p}_e & \dot{p}_d & \dot{u} & \dot{v} & \dot{w} & \dot{e}_0 & \dot{e}_1 & \dot{e}_2 & \dot{e}_3 & \dot{p} & \dot{q} & \dot{r}}^T$. First, we need to find equilibrium. So,
-\mathse{
-    \dot{x} = f(x, u) \implies \mat{\dot{p}_n\\ \dot{p}_e\\ \dot{p}_d\\ \dot{u}\\ \dot{v}\\ \dot{w}\\ \dot{e}_0\\ \dot{e}_1\\ \dot{e}_2\\ \dot{e}_3\\ \dot{p}\\ \dot{q}\\ \dot{r}} = \sinput{f_x_u}.
-}
-The following subsections handle generating the state for the descent phase and landing phase.
-\subsection{Descent}
+% \section{Linearizing}
+% For this section, we will use the general form of the dynamics equations. Let $x = \mat{\dot{p}_n & \dot{p}_e & \dot{p}_d & \dot{u} & \dot{v} & \dot{w} & \dot{e}_0 & \dot{e}_1 & \dot{e}_2 & \dot{e}_3 & \dot{p} & \dot{q} & \dot{r}}^T$. First, we need to find equilibrium. So,
+% \mathse{
+%     \dot{x} = f(x, u) \implies \mat{\dot{p}_n\\ \dot{p}_e\\ \dot{p}_d\\ \dot{u}\\ \dot{v}\\ \dot{w}\\ \dot{e}_0\\ \dot{e}_1\\ \dot{e}_2\\ \dot{e}_3\\ \dot{p}\\ \dot{q}\\ \dot{r}} = \sinput{f_x_u}.
+% }
+% The following subsections handle generating the state for the descent phase and landing phase.
+% \subsection{Descent}
 
-{\tiny
-\mathse{
-    \sinput{A}x + \sinput{B}u
-}
-}
+% {\tiny
+% \mathse{
+%     \sinput{A}x + \sinput{B}u
+% }
+% }
 
 
 
@@ -211,7 +211,10 @@ The following subsections handle generating the state for the descent phase and 
 %     \sinput{M4_acc}
 % }
 
-
+\newpage
+\mathse{
+    \sinput{descentCP_f}
+}
 
 \newpage
 \begin{center}

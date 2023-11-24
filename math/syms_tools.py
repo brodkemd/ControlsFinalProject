@@ -2,9 +2,19 @@ from sympy import cos, sin, Matrix, latex, zeros
 import os
 
 cwd = os.path.join(os.path.dirname(__file__), "sympy_output")
+to_replace = {
+    "starboard" : "s",
+    "port" : "p",
+    "canard" : "c",
+    "fin" : "f"
+}
 def write(s, _file:str):
     global cwd
-    if not isinstance(s, str): s = latex(s)
+    if not isinstance(s, str):
+        s = latex(s)
+        for item in to_replace:
+            s = s.replace(item, to_replace[item])
+
 
     _file = os.path.join(cwd, _file)
     with open(_file, "w") as file: file.write(s)
@@ -16,10 +26,10 @@ def Euler2Quaternion(phi, theta, psi):
     :return: Quaternian attitude in np.array(e0, e1, e2, e3)
     """
 
-    e0 = cos(psi/2.0) * cos(theta/2.0) * cos(phi/2.0) + sin(psi/2.0) * sin(theta/2.0) * sin(phi/2.0)
-    e1 = cos(psi/2.0) * cos(theta/2.0) * sin(phi/2.0) - sin(psi/2.0) * sin(theta/2.0) * cos(phi/2.0)
-    e2 = cos(psi/2.0) * sin(theta/2.0) * cos(phi/2.0) + sin(psi/2.0) * cos(theta/2.0) * sin(phi/2.0)
-    e3 = sin(psi/2.0) * cos(theta/2.0) * cos(phi/2.0) - cos(psi/2.0) * sin(theta/2.0) * sin(phi/2.0)
+    e0 = cos(psi/2) * cos(theta/2) * cos(phi/2) + sin(psi/2) * sin(theta/2) * sin(phi/2)
+    e1 = cos(psi/2) * cos(theta/2) * sin(phi/2) - sin(psi/2) * sin(theta/2) * cos(phi/2)
+    e2 = cos(psi/2) * sin(theta/2) * cos(phi/2) + sin(psi/2) * cos(theta/2) * sin(phi/2)
+    e3 = sin(psi/2) * cos(theta/2) * cos(phi/2) - cos(psi/2) * sin(theta/2) * sin(phi/2)
 
     return Matrix([e0, e1, e2, e3])
 

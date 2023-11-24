@@ -10,7 +10,7 @@ class BaseStateSpace(Base):
     cwd = os.path.dirname(__file__)
 
     # initializing for convenience
-    A, B, C_r, x_e, u_e, y_re, global_x_to_local_x, global_x_r_to_local_x_r, local_u_to_global_u = None, None, None, None, None, None, None, None, None
+    A, B, C_r, x_e, u_e, y_re, global_x_to_local_x, global_x_r_to_local_x_r, local_u_to_global_u, CC = None, None, None, None, None, None, None, None, None, None
 
     def __init__(self, module_file:str=None) -> None:
         super().__init__()

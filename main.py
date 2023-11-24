@@ -1,40 +1,15 @@
-from tools.rotations import Euler2Quaternion
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np
-import platform, os
+import platform, os, traceback
 
 import parameters.simulation_parameters as SIM
+import parameters.body_parameters       as P
 from viewers.animation                  import Animation
 from viewers.dataPlotter                import DataPlotter
 from dynamics.dynamics                  import Dynamics
-from dynamics.forcesMoments             import ForcesMomentsFromCP
+from dynamics.forcesMoments             import ForcesMoments
 from controller.fullStateFeedback       import FullStateFeedBack
-
-# use these euler angles to initial quaternion (easiest method)
-phi   = 0
-theta = np.deg2rad(20) # np.deg2rad(90)
-psi   = 0
-
-# defining the initial state
-state = np.array([
-    0, # p_n
-    0, # p_e
-   -10000, # p_d
-    0, # u
-    0, # v
-    0, # w
-    Euler2Quaternion(phi, theta, psi).item(0), # e_0
-    Euler2Quaternion(phi, theta, psi).item(1), # e_1
-    Euler2Quaternion(phi, theta, psi).item(2), # e_2
-    Euler2Quaternion(phi, theta, psi).item(3), # e_3
-    0, # p
-    0, # q
-    0 # r
-], dtype=float)
-
-state_reference    = state.copy()
-state_reference[2] = 0
 
 make_output        = 0
 show_figures       = 0
@@ -54,68 +29,88 @@ if include_animation:
     )
 
 if include_plotter or write_data_to_file:
-    plotter = DataPlotter(
-        width       = SIM.fig_width,
-        height      = SIM.fig_height, 
-        plot        = include_plotter,
-        interactive = show_figures
-    )
+    plotter = DataPlotter(width = SIM.fig_width, height = SIM.fig_height, plot = include_plotter, interactive = show_figures)
 
 # turn of screen rendering if show animation is false
 if not show_figures:
     plt.close('all')
     mpl.use('Agg')
 
-
-controller = FullStateFeedBack(compute_gains=True)
+state      = P.initial_state.copy()
+controller = FullStateFeedBack(compute_gains=False)
 dynamics   = Dynamics(state)
-forces     = ForcesMomentsFromCP()
+forces     = ForcesMoments()
+exit()
+try:
+    print("\nProgress:")
+    t = SIM.start_time
+    count = 0
+    while t < SIM.end_time:
+        # setting next time to make a plot, exits inner loop at that time
+        t_next_plot = t + SIM.ts_plot
+
+        # loop that runs the dynamics
+        while t < t_next_plot:
+            F_E, F_cp, tau, x_r = controller.update(state)
+            u                   = forces.update(state, F_E, F_cp, tau)
+            y, crash, landed    = dynamics.update(u)
+            t += SIM.ts_simulation
+            if crash or landed: break
+
+        # updating animation from result of dynamics
+        if include_animation: animation.update(y)
+
+        # plotting the state variables and forces with respect to time
+        if include_plotter or write_data_to_file:
+            response = [[y.item(i), x_r.item(i)] for i in range(len(y))]
+            plotter.update(t, response, F_E.tolist() + F_cp.tolist() + tau.tolist())
+
+        # saving image of figure if on a valid timestep
+        if include_plotter and make_output:
+            plotter.savefig(SIM.output_plot_file_format.format(num=count), SIM.input_plot_file_format.format(num=count))
+        if include_animation and make_output:
+            animation.savefig(SIM.animation_file_format.format(num=count))
+        if show_figures: plt.pause(0.001) # allows animation to draw
+
+        # -------increment time-------------
+        count+=1
+
+        if crash:
+            print("Detected crash :(\nexiting simulation loop")
+            break
+        if landed:
+            print("Detected landing, yay!!!!!\nexiting simulation loop")
+            break
+
+        # progresses bar with stats
+        #print(round(t, 6), "/", SIM.end_time, round(np.rad2deg(Quaternion2Euler(y[6:10])[1]),2), end="      \r")
+        print(round(t, 6), "/", SIM.end_time, end="      \r")
+    print()
+
+except KeyboardInterrupt:
+    # catches user interrupts, stops wordy error messages that occur due a usual user interruption
+    print("\nCaught keyboard interrupt, Exiting ...")
+    exit()
+
+except Exception:
+    # saves data if there is an error
+    traceback.print_exc()
+    print("\nDumping collected data")
+    if write_data_to_file: plotter.saveData(SIM.data_file)
+    exit()
 
 
-t = SIM.start_time
-count = 0
 
-print("\nProgress:")
-while t < SIM.end_time:
-    # setting next time to make a plot, exits inner loop at that time
-    t_next_plot = t + SIM.ts_plot
 
-    # loop that runs the dynamics
-    while t < t_next_plot:
-        F_E, F_cp, r_cp = controller.update(state, state_reference)
-        # print(F_E)
-        u        = forces.update(state, F_E, F_cp, r_cp)
-        y, crash = dynamics.update(u) #[0, 0, 0, Euler2Quaternion(0, 0, np.deg2rad(t))]
-        t += SIM.ts_simulation
-        if crash: break
 
-    # updating animation from result of dynamics
-    if include_animation:
-        animation.update(y)
 
-    # plotting the state variables and forces with respect to time
-    if include_plotter or write_data_to_file:
-        response = [[y.item(i), state_reference.item(i)] for i in range(len(y))]
-        plotter.update(t, response, F_E.tolist() + F_cp.tolist() + r_cp.tolist())
+################
+#
+# The rest is just post processing
+#
+################
 
-    # saving image of figure if on a valid timestep
-    if include_plotter and make_output:
-        plotter.savefig(SIM.output_plot_file_format.format(num=count), SIM.input_plot_file_format.format(num=count))
-    if include_animation and make_output:
-        animation.savefig(SIM.animation_file_format.format(num=count))
-    if show_figures:
-        plt.pause(0.001) # allows animation to draw
 
-    # -------increment time-------------
-    count +=1
-
-    if crash:
-        print("Detected crash, exiting simulation loop")
-        break
-
-    # progresses bar with stats
-    print(round(t, 6), "/", SIM.end_time, end="      \r")
-print()
 
 if write_data_to_file: plotter.saveData(SIM.data_file)
 

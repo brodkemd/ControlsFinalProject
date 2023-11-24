@@ -1,14 +1,14 @@
 from syms_vars import *
-from sympy import Rational, rad, zeros, solve
+from sympy import Rational, rad, zeros, solve, sqrt
 from syms_tools import write, Euler2Quaternion, writeMathModule
+import sys
+sys.path.append(".")
+import tools.Logging as log
 import time
 
-F = F_E + F_g + F_cp
-write(F, "F")
 
-tau = r_E.cross(F_E) + r_cp.cross(F_cp)
+tau = (r_E.cross(F_E) + tau_control).subs(vals)
 write(tau, "tau")
-
 
 F_g = m*g*Matrix([
     2*(e_1*e_3 - e_2*e_0),
@@ -17,8 +17,8 @@ F_g = m*g*Matrix([
 ])
 
 # update the force to include actual force of gravity
-F = F_E + F_g + F_cp
-write(F, "F_subbed")
+F = (F_E + F_g + F_cp).subs(vals)
+write(F, "F")
 
 # V to V_g
 M1 = Matrix([
@@ -57,8 +57,6 @@ dot_p    = omega_dot[0].subs(vals)
 dot_q    = omega_dot[1].subs(vals)
 dot_r    = omega_dot[2].subs(vals)
 
-x_names = "p_n,p_e,p_d,u,v,w,e_0,e_1,e_2,e_3,p,q,r".split(",")
-u_names = "f_E_x,f_E_y,f_E_z,f_cp_x,f_cp_y,f_cp_z,r_cp_x,r_cp_y,r_cp_z".split(",")
 
 f_general = zeros(len(x_names), 1)
 for i in range(len(x_names)):
@@ -66,9 +64,113 @@ for i in range(len(x_names)):
 
 write(f_general, "f_general")
 
-def computeStateSpace(name, x_vars, u_vars, x_e, x_dot_e = None):
-    space = "  "
 
+# control calculation here
+compute_descent = 1
+compute_flip    = 1
+compute_landing = 1
+
+
+def descentCP():
+    log.info("DescentCP")
+
+    # variables to control
+    x_vars = "e_1,e_2,e_3,p,q,r".split(",")
+    u_vars = "f_cp_port_canard_y,f_cp_port_canard_z,f_cp_starboard_canard_x,f_cp_starboard_canard_y,f_cp_starboard_canard_z,f_cp_port_fin_x,f_cp_port_fin_y,f_cp_port_fin_z,f_cp_starboard_fin_x,f_cp_starboard_fin_y,f_cp_starboard_fin_z".split(",")
+
+    reference_params = "p_n,p_e,u,v,w,e_0,e_1,e_2,e_3,p,q,r".split(",") # must be same length as u_vars
+
+    phi_e   = rad(0) # has to be this
+    theta_e = rad(0) # has to be this
+    psi_e   = rad(0) # dont care, pick 0
+    log.info(1,"Quaternion:", Euler2Quaternion(phi_e, theta_e, psi_e))
+
+    x_e = {
+        #w   : 50,
+        e_0 : Euler2Quaternion(phi_e, theta_e, psi_e)[0],
+        e_1 : Euler2Quaternion(phi_e, theta_e, psi_e)[1],
+        e_2 : Euler2Quaternion(phi_e, theta_e, psi_e)[2],
+        e_3 : Euler2Quaternion(phi_e, theta_e, psi_e)[3]
+    }
+    fraction_gravity_acceleration = 2
+    u_e = {
+        # f_cp_port_canard_z      : (-m*g/4)/fraction_gravity_acceleration,
+        # f_cp_starboard_canard_z : (-m*g/4)/fraction_gravity_acceleration,
+        # f_cp_port_fin_z         : (-m*g/4)/fraction_gravity_acceleration,
+        # f_cp_starboard_fin_z    : (-m*g/4)/fraction_gravity_acceleration
+    }
+
+    if fraction_gravity_acceleration != 1:
+        x_dot_e = {
+            #p_d : 50,
+            #w   :  g/fraction_gravity_acceleration
+        }
+    else:
+        x_dot_e = {
+            # p_d : 50
+        }
+
+    export("descentCP", x_vars, u_vars, reference_params, x_e, x_dot_e, u_e) # computes the state space and saves it to a file
+
+
+def flipCP():
+    print("flipCP")
+
+    # variables to control
+    x_vars = "p_n,p_e,p_d,u,v,w,e_1,e_2,e_3,p,q,r".split(",")
+    u_vars = "f_E_x,f_E_y,f_E_z,f_cp_port_canard_y,f_cp_port_canard_z,f_cp_starboard_canard_y,f_cp_starboard_canard_z".split(",")
+    n = len(x_vars)
+
+    reference_params:list = "p_n,p_e,u,v,e_1,e_2,e_3".split(",") # must be same length as u_vars
+
+    phi_e   = rad(0)  # dont care, pick 0
+    theta_e = rad(90) # has to be this
+    psi_e   = rad(0)  # dont care, pick 0
+    log.info(1,"Quaternion:",Euler2Quaternion(phi_e, theta_e, psi_e))
+
+    x_e = {
+        e_0 : Euler2Quaternion(phi_e, theta_e, psi_e)[0],
+        e_1 : Euler2Quaternion(phi_e, theta_e, psi_e)[1],
+        e_2 : Euler2Quaternion(phi_e, theta_e, psi_e)[2],
+        e_3 : Euler2Quaternion(phi_e, theta_e, psi_e)[3]
+    }
+
+    u_e = {
+        f_E_x : m*g
+    }
+
+    export("flipCP", x_vars, u_vars, reference_params, x_e, u_e=u_e) # computes the state space and saves it to a file
+
+def landing():
+    print("Landing")
+
+    # variables to control
+    x_vars = "p_n,p_e,p_d,u,v,w,e_0,e_3,q,r".split(",") # order matters
+    u_vars = "f_E_x,f_E_y,f_E_z".split(",")
+    n      = len(x_vars)
+
+    reference_params:list = "p_n,p_e,p_d".split(",")
+
+    #### for landing 
+    phi_e   = rad(0)  # dont care, pick 0
+    theta_e = rad(90) # has to be this
+    psi_e   = rad(0)  # dont care, pick 0
+    log.info(1,"Quaternion:",Euler2Quaternion(phi_e, theta_e, psi_e))
+
+    x_e = {
+        e_0 : Euler2Quaternion(phi_e, theta_e, psi_e)[0],
+        e_1 : Euler2Quaternion(phi_e, theta_e, psi_e)[1],
+        e_2 : Euler2Quaternion(phi_e, theta_e, psi_e)[2],
+        e_3 : Euler2Quaternion(phi_e, theta_e, psi_e)[3]
+    }
+
+    export("landing", x_vars, u_vars, reference_params, x_e) # computes the state space and saves it to a file
+
+
+
+##### Begin computational functions
+
+def computeStateSpace(name, x_vars, u_vars, x_e, x_dot_e = None, u_e = None):
     # sets up the dot x at equilibrium vector
     if x_dot_e is None:
         x_dot_e_vec = [0 for i in range(len(x_names))]
@@ -77,8 +179,6 @@ def computeStateSpace(name, x_vars, u_vars, x_e, x_dot_e = None):
         for item in x_names:
             item = eval(item)
             if item not in x_dot_e:
-                print(item)
-                # print(2*space + "Adding:", item)
                 x_dot_e[item] = 0
         
         x_dot_e_vec  = []
@@ -87,9 +187,9 @@ def computeStateSpace(name, x_vars, u_vars, x_e, x_dot_e = None):
             x_dot_e_vec.append(x_dot_e[item])
     
     x_dot_e_vec = Matrix(x_dot_e_vec)
-    print(space+"x_dot_e:")
+    log.info(1, "x_dot_e:")
     for i in range(len(x_names)):
-        print(2*space + f"{x_names[i]} = {x_dot_e_vec[i]}")
+        log.info(2, f"{x_names[i]} = {x_dot_e_vec[i]}")
 
     # getting the x symbolic variables
     x_vec = [eval(item) for item in x_vars]
@@ -122,39 +222,61 @@ def computeStateSpace(name, x_vars, u_vars, x_e, x_dot_e = None):
     write(Matrix(x_e_vec), f"{name}_x_e")
 
     # printing out equilibrium state
-    print(space+"x_e:")
+    log.info(1,"x_e:")
     for item in x_e_subs:
-        print(2*space + f"{item[0]} = ", item[1], sep="")
+        log.info(2, f"{item[0]} = " + str(item[1]))
     
-    # filling in inputs that are not the ones being controlled with the default values
-    u_subs = []
-    for item in u_names:
-        item = eval(item)
-        if item not in u_vec:
-            # print(2*space + f"{item} = ", default_values_u[item], sep="")
-            u_subs.append((item, default_values_u[item]))
+    
+    if u_e is None:
+        # filling in inputs that are not the ones being controlled with the default values
+        u_subs = []
+        for item in u_names:
+            item = eval(item)
+            if item not in u_vec:
+                # print(2*space + f"{item} = ", default_values_u[item], sep="")
+                u_subs.append((item, default_values_u[item]))
 
-    # subbing the values into the general f equation
-    f_e = f_general.subs(x_e_subs + u_subs)
-    print(f_e)
-    write(f_e, f"{name}_f_e")
-    print(space+"Computing u_e")
-    # finding the rest of the inputs
-    u_e = solve(f_e-x_dot_e_vec, u_vec, dict=True)
+        # subbing the values into the general f equation
+        f_e = f_general.subs(x_e_subs + u_subs)
+        log.info(2, "f_e equation:")
+        for i in range(len(f_e)):
+            log.info(2, x_dot_e_vec[i], "=", f_e[i])
 
-    if not len(u_e):
-        print("Could not find u_e")
-        exit()
+        write(f_e, f"{name}_f_e")
+        log.info(1, "Computing u_e")
+
+        # finding the rest of the inputs
+        u_e = solve(f_e-x_dot_e_vec, u_vec, dict=True)
+
+        if not len(u_e): log.error("Could not find u_e")
+        else:            u_e = u_e[0]
+
+        # filling out the rest of the input solution with the default values
+        for item in u_names:
+            item = eval(item)
+            if item not in u_e:
+                u_e[item] = default_values_u[item]
+
     else:
-        u_e = u_e[0]
+        for item in u_names:
+            item = eval(item)
+            if item not in u_e:
+                u_e[item] = default_values_u[item]
 
-    # filling out the rest of the input solution with the default values
-    for item in u_names:
-        item = eval(item)
-        if item not in u_e:
-            print(2*space + "Adding:", item)
-            u_e[item] = default_values_u[item]
-
+        u_check_subs = []
+        for item in u_names:
+            item = eval(item)
+            u_check_subs.append((item, u_e[item]))
+        f_e = f_general.subs(x_e_subs + u_check_subs)
+        if f_e == x_dot_e_vec:
+            log.info(1,"Provided u_e satisfies constraints")
+        else:
+            log.info(1, "Provided u_e DOES NOT satisfy constraints")
+            log.info(2, "f_e equation:")
+            for i in range(len(f_e)):
+                log.info(2, x_dot_e_vec[i], "=", f_e[i])
+            exit()
+        
     # making a list of values to substitute for in the equation
     u_e_subs = []
     u_e_vec  = []
@@ -165,34 +287,20 @@ def computeStateSpace(name, x_vars, u_vars, x_e, x_dot_e = None):
     write(Matrix(u_e_vec), f"{name}_u_e")
 
     # printing out equilibrium input
-    print(space+"u_e:")
+    log.info(2, "u_e:")
     for item in u_e_subs:
-        print(2*space + f"{item[0]} = ", item[1], sep="")
+        log.info(3, f"{item[0]} = " + str(item[1]))
 
-    # # computing jacobian of the system with respect to the state, first step to A
-    # x_jacobian_subs = []
-    # for item in x_names:
-    #     item = eval(item)
-    #     if item not in x_vec:
-    #         x_jacobian_subs.append((item, default_values_x[item]))
-    
-    # u_jacobian_subs = []
-    # for item in u_names:
-    #     item = eval(item)
-    #     if item not in u_vec:
-    #         u_jacobian_subs.append((item, default_values_u[item]))
-
-    # f = f.subs(x_jacobian_subs + u_jacobian_subs)
-    print("  Computing x jacobian:", end=" ")
+    log.info(1,"Computing x jacobian:", end=" ")
     df_dx = f.jacobian(x_vec)
     write(df_dx, f"{name}_df_dx")
-    print("done")
+    log.info("done")
 
     # computing jacobian of the system with respect to the input, first step to B
-    print("  Computing u jacobian:", end=" ")
+    log.info(1, "Computing u jacobian:", end=" ")
     df_du = f.jacobian(u_vec)
     write(df_du, f"{name}_df_du")
-    print("done")
+    log.info("done")
 
     # evaluating at equilibrium to get A
     A = df_dx.subs(x_e_subs + u_e_subs)
@@ -202,26 +310,26 @@ def computeStateSpace(name, x_vars, u_vars, x_e, x_dot_e = None):
     B = df_du.subs(x_e_subs + u_e_subs)
     write(B, f"{name}_B")
 
-    print("  Computing Controllability Matrix:", end=" ")
+    log.info(1, "Computing Controllability Matrix:", end=" ")
     # computing the controllability matrix
     C = [(A**i)*B for i in range(n)]
     CC = Matrix.hstack(*C)
-    print("done")
+    log.info("done")
 
     # printing out the number of rows and the rank (hopefully they are equal)
-    print("  Computing Controllability Matrix Rank:")
+    log.info("Computing Controllability Matrix Rank:")
     time.sleep(0.5)
     rank = CC.rank()
-    print("    done")
+    log.info(2, "done")
     
     if rank == CC.shape[0]:
-        print(space+"System is controlable")
-        print(2*space+"Rows:", CC.shape[0])
-        print(2*space+"Rank:", rank)
+        log.info(1,"System is controlable")
+        log.info(2, "Rows:", CC.shape[0])
+        log.info(2, "Rank:", rank)
     else:
-        print(space+"System is NOT controlable, exiting")
-        print(2*space+"Rows:", CC.shape[0])
-        print(2*space+"Rank:", rank)
+        log.info(1, "System is NOT controlable, exiting")
+        log.info(2, "Rows:", CC.shape[0])
+        log.info(2, "Rank:", rank)
         exit()
     
     return A.copy(), B.copy(), CC.copy(), Matrix(x_e_vec).copy(), Matrix(u_e_vec).copy()
@@ -229,6 +337,12 @@ def computeStateSpace(name, x_vars, u_vars, x_e, x_dot_e = None):
 
 def computeTransforms(x_vars, u_vars, reference_params, x_e):
     n = len(x_vars)
+    if len(reference_params) != len(u_vars):
+        log.info("Error: len(reference_params) != len(u_vars)")
+        log.info(1, "len(reference_params):", len(reference_params))
+        log.info(1, "len(u_vars):", len(u_vars))
+        exit()
+
     global_x_to_local_x = zeros(len(x_vars), len(x_names))
     for i in range(len(x_vars)):
         for j in range(len(x_names)):
@@ -257,168 +371,16 @@ def computeTransforms(x_vars, u_vars, reference_params, x_e):
         item = eval(reference_params[i])
         if item in x_e:
             y_re[i] = x_e[item]
-    
-    
 
     return global_x_to_local_x, global_x_r_to_local_x_r, local_u_to_global_u, C_r, y_re
 
-
-
-
-
-
-def descentCP():
-    print("DescentCP")
-    # for printing's sake
-    space = "  "
-
-    # variables to control
-    x_vars = "p_n,p_e,u,v,e_1,e_2,p,q,r".split(",")
-    u_vars = "f_cp_x,f_cp_y,f_cp_z,r_cp_x,r_cp_y,r_cp_z".split(",")
-    n = len(x_vars)
-
-    reference_params:list = "p_n,p_e,e_1,e_2".split(",") # must be same length as u_vars
-
-    phi_e   = rad(5) # has to be this
-    theta_e = rad(5) # has to be this
-    psi_e   = rad(5)  # dont care, pick 0
-    print(space+"Quaternion:",Euler2Quaternion(phi_e, theta_e, psi_e))
-
-    x_e = {
-        # w   : 50,
-        e_0 : Euler2Quaternion(phi_e, theta_e, psi_e)[0],
-        e_1 : Euler2Quaternion(phi_e, theta_e, psi_e)[1],
-        e_2 : Euler2Quaternion(phi_e, theta_e, psi_e)[2],
-        e_3 : Euler2Quaternion(phi_e, theta_e, psi_e)[3]
-    }
-
-    # x_dot_e = {
-    #     p_d : 50
-    # }
-
-    A, B, CC, x_e, u_e = computeStateSpace("descentCP", x_vars, u_vars, x_e)#, x_dot_e)
+def export(name, x_vars, u_vars, reference_params, x_e, x_dot_e = None, u_e = None):
+    A, B, CC, x_e, u_e = computeStateSpace(name, x_vars, u_vars, x_e, x_dot_e, u_e)
     global_x_to_local_x, global_x_r_to_local_x_r, local_u_to_global_u, C_r, y_re = computeTransforms(x_vars, u_vars, reference_params, x_e)
 
-    writeMathModule("descentCP", A=A, B=B, C_r=C_r, x_e=x_e, u_e=u_e, y_re=y_re, global_x_to_local_x=global_x_to_local_x, global_x_r_to_local_x_r=global_x_r_to_local_x_r, local_u_to_global_u=local_u_to_global_u)
-
-descentCP()
+    writeMathModule(name, A=A, B=B, C_r=C_r, CC=CC, x_e=x_e, u_e=u_e, y_re=y_re, global_x_to_local_x=global_x_to_local_x, global_x_r_to_local_x_r=global_x_r_to_local_x_r, local_u_to_global_u=local_u_to_global_u)
 
 
-def landing():
-    print("Landing")
-    # for printing's sake
-    space = "  "
-
-    # variables to control
-    x_vars = "p_n,p_e,p_d,u,v,w,e_0,e_3,q,r".split(",") # order matters
-    u_vars = "f_E_x,f_E_y,f_E_z".split(",")
-    n      = len(x_vars)
-
-    reference_params:list = "p_n,p_e,p_d".split(",")
-
-    C_r    =  zeros(len(reference_params), n)
-    for i in range(len(x_vars)):
-        if x_vars[i] in reference_params:
-            C_r[reference_params.index(x_vars[i]),i] = 1
-
-    # write(f, "f_x_u")
-    #### for landing 
-    phi_e   = rad(0)  # dont care, pick 0
-    theta_e = rad(90) # has to be this
-    psi_e   = rad(0)  # dont care, pick 0
-    print(space+"Quaternion:",Euler2Quaternion(phi_e, theta_e, psi_e))
-
-    x_e = {
-        e_0 : Euler2Quaternion(phi_e, theta_e, psi_e)[0],
-        e_1 : Euler2Quaternion(phi_e, theta_e, psi_e)[1],
-        e_2 : Euler2Quaternion(phi_e, theta_e, psi_e)[2],
-        e_3 : Euler2Quaternion(phi_e, theta_e, psi_e)[3]
-    }
-
-    A, B, CC, x_e, u_e = computeStateSpace("landing", x_vars, u_vars, x_e)
-    global_x_to_local_x, global_x_r_to_local_x_r, local_u_to_global_u, C_r, y_re = computeTransforms(x_vars, u_vars, reference_params, x_e)
-
-    writeMathModule("landing", A=A, B=B, C_r=C_r, x_e=x_e, u_e=u_e, y_re=y_re, global_x_to_local_x=global_x_to_local_x, global_x_r_to_local_x_r=global_x_r_to_local_x_r, local_u_to_global_u=local_u_to_global_u)
-
-
-
-# landing()
-
-
-
-def flipCP():
-    print("flipCP")
-    # for printing's sake
-    space = "  "
-
-    # variables to control
-    x_vars = "p_n,p_e,u,v,w,e_0,e_3,q,r".split(",")
-    u_vars = "f_E_x,f_E_y,f_E_z,r_cp_x,r_cp_y,r_cp_z".split(",")
-    n = len(x_vars)
-
-    reference_params:list = "u,v,e_0,e_3,q,r".split(",") # must be same length as u_vars
-
-    phi_e   = rad(0)  # dont care, pick 0
-    theta_e = rad(90) # has to be this
-    psi_e   = rad(0)  # dont care, pick 0
-    print(space+"Quaternion:",Euler2Quaternion(phi_e, theta_e, psi_e))
-
-    x_e = {
-        e_0 : Euler2Quaternion(phi_e, theta_e, psi_e)[0],
-        e_1 : Euler2Quaternion(phi_e, theta_e, psi_e)[1],
-        e_2 : Euler2Quaternion(phi_e, theta_e, psi_e)[2],
-        e_3 : Euler2Quaternion(phi_e, theta_e, psi_e)[3]
-    }
-
-    A, B, CC, x_e, u_e = computeStateSpace("flipCP", x_vars, u_vars, x_e)
-    global_x_to_local_x, global_x_r_to_local_x_r, local_u_to_global_u, C_r, y_re = computeTransforms(x_vars, u_vars, reference_params, x_e)
-
-    writeMathModule("flipCP", A=A, B=B, C_r=C_r, x_e=x_e, u_e=u_e, y_re=y_re, global_x_to_local_x=global_x_to_local_x, global_x_r_to_local_x_r=global_x_r_to_local_x_r, local_u_to_global_u=local_u_to_global_u)
-
-
-
-# flipCP()
-"""
-s = Symbol("s")
-    sI_minus_A = s*eye(n) - A
-    write(sI_minus_A, "sI_minus_A")
-
-    Delta_ol = Poly(sI_minus_A.det(), s)
-    a_A = Delta_ol.all_coeffs()
-    print(a_A)
-    if a_A[0] != 1:
-        print(space+"Normalizing Delta_ol to get leading coef. of 1, current coef. is", a_A[0])
-        Delta_ol = Delta_ol/a_A[0]
-        a_A = Delta_ol.all_coeffs()
-    
-    A_A = eye(n)
-    for i in range(n):
-        for j in range(i+1, n):
-            A_A[i,j] = a_A[-(j-i)]
-    # print(A_A)
-
-    # must have length n
-    p = -1*Rational(1, 2)*ones(n, 1)
-    # print(p)
-
-    if len(p) != n:
-        print("p (list of poles) does not have the right length")
-        exit()
-    
-    Delta_cl = 1
-    for i in range(n):
-        Delta_cl*=(s - p[i])
-    Delta_cl = Poly(Delta_cl, s)
-
-    alpha = Delta_cl.all_coeffs()
-    print(alpha)
-    if alpha[0] != 1:
-        print(space+"Normalizing Delta_cl to get leading coef. of 1, current coef. is", alpha[0])
-        Delta_cl = Delta_cl/alpha[0]
-        alpha = Delta_cl.all_coeffs()
-    
-    a_A   = Matrix(a_A).T
-    alpha = Matrix(alpha).T
-    print(alpha, a_A)
-
-"""
+if compute_descent: descentCP()
+if compute_flip:    flipCP()
+if compute_landing: landing()

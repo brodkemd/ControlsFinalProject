@@ -6,10 +6,10 @@ class ForcesMoments:
     def __init__(self) -> None:
         #Need locations from the c.g. of the canards and fins
         self.FMFromCP = ForcesMomentsFromCP()
-        self.CPFromAerodynamics = CPFromAerodynamics()
+        # self.CPFromAerodynamics = CPFromAerodynamics()
 
-    def update(self):
-        pass
+    def update(self, _state, F_E, F_cp, tau):
+        return self.FMFromCP.update(_state, F_E, F_cp, tau)
 
 
 
@@ -131,7 +131,7 @@ class ForcesMomentsFromCP:
         self.m   = BODY.mass
         self.g   = BODY.gravity
 
-    def update(self, _state, F_E, F_cp, r_cp):
+    def update(self, _state, F_E, F_cp, tau):
         e_0     = _state.item(6)
         e_1     = _state.item(7)
         e_2     = _state.item(8)
@@ -143,7 +143,7 @@ class ForcesMomentsFromCP:
             e_3**2 + e_0**2 - e_1**2 - e_2**2
         ])
 
-        tau = np.cross(self.r_E, F_E) + np.cross(r_cp, F_cp)
+        tau = np.cross(self.r_E, F_E) + tau
         F   = F_E + F_g + F_cp
 
         return np.hstack((F, tau))
