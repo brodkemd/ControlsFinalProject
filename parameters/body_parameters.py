@@ -39,10 +39,10 @@ psi   = 0
 initial_state = np.array([
     0, # p_n
     0, # p_e
-   -3500, # p_d
+   -10000, # p_d
     0, # u
     0, # v
-    0, # w
+    182.45, # w, M=0.8 for entry
     Euler2Quaternion(phi, theta, psi).item(0), # e_0
     Euler2Quaternion(phi, theta, psi).item(1), # e_1
     Euler2Quaternion(phi, theta, psi).item(2), # e_2

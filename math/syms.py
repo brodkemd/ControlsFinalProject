@@ -78,7 +78,8 @@ def descentCP():
     x_vars = "e_1,e_2,e_3,p,q,r".split(",")
     u_vars = "f_cp_port_canard_y,f_cp_port_canard_z,f_cp_starboard_canard_x,f_cp_starboard_canard_y,f_cp_starboard_canard_z,f_cp_port_fin_x,f_cp_port_fin_y,f_cp_port_fin_z,f_cp_starboard_fin_x,f_cp_starboard_fin_y,f_cp_starboard_fin_z".split(",")
 
-    reference_params = "p_n,p_e,u,v,w,e_0,e_1,e_2,e_3,p,q,r".split(",") # must be same length as u_vars
+    # reference_params = "p_n,p_e,u,v,w,e_0,e_1,e_2,e_3,p,q,r".split(",") # must be same length as u_vars
+    reference_params = "u,v,w,e_0,e_1,e_2,e_3,p,q,r".split(",") # must be same length as u_vars
 
     phi_e   = rad(0) # has to be this
     theta_e = rad(0) # has to be this
