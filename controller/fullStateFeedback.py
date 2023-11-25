@@ -1,7 +1,9 @@
 from controller.stateSpace import LandingStateSpace, FlipStateSpaceCP, DescentStateSpaceCP, BaseStateSpace
 from tools.rotations import Euler2Quaternion, Quaternion2Euler
 from parameters.baseClass import Base
+from parameters import config
 from tools.toString import arrToStr, numToStr
+
 import numpy as np
 import control, os, platform, warnings, json, subprocess
 import scipy.io
@@ -15,10 +17,6 @@ class BaseFullStateFeedBack:
 
     def generateGains(self, A:np.ndarray, B:np.ndarray, C_r:np.ndarray, poles:list[np.complex64], name:str, compute_gains=True, CC=None):
         cwd  = os.path.dirname(__file__)
-        data = {}
-        with open(os.path.join(os.path.dirname(cwd), "data", "user_config.json")) as f:
-            data = json.loads(f.read())
-        self.matlab = data["matlab"]
         file_stem = os.path.join(cwd, name)
         
         if len(poles) != len(A): raise ValueError("number of poles must be the same as the number of rows of A")
@@ -50,13 +48,10 @@ class BaseFullStateFeedBack:
 
             print("    Computing Gains:", end=" ")
             if "linux" in platform.system().lower() and compute_gains:
-                os.system(f'{self.matlab} -nodisplay -nosplash -nodesktop -batch "{name}" -sd "{cwd}" > /dev/null')
+                os.system(f'{config.matlab} -nodisplay -nosplash -nodesktop -batch "{name}" -sd "{cwd}" > /dev/null')
             else:
-                subprocess.call(f'"{self.matlab}" -nodisplay -nosplash -nodesktop -batch "{name}" -sd "{cwd}"', shell=True)
+                subprocess.call(f'"{config.matlab}" -nosplash -nodesktop -batch "{name}" -sd "{cwd}"', shell=True)
             print("done")
-        else:
-            if compute_gains:
-                print("    Can not compute gains without linux (do not know matlab is installed)")
 
         print(f"    Loading gain matrix:", end=" ")
         mat_data = scipy.io.loadmat(f"{file_stem}.mat")
@@ -235,7 +230,7 @@ class DescentCP(DescentStateSpaceCP, BaseFullStateFeedBack):
         poles.append(-0.1)
 
         self.K, self.K_r = self.generateGains(self.A, self.B, self.C_r, poles, "descentCP", compute_gains=compute_gains, CC=self.CC)
-        self.eigenVectorAnalysis()
+        # self.eigenVectorAnalysis()
 
 
 class FlipCP(FlipStateSpaceCP, BaseFullStateFeedBack):
@@ -258,7 +253,7 @@ class FlipCP(FlipStateSpaceCP, BaseFullStateFeedBack):
             poles.append(-zeta*omega_n - omega_n*np.sqrt(1 - zeta**2)*1j)
 
         self.K, self.K_r = self.generateGains(self.A, self.B, self.C_r, poles, "flipCP", compute_gains=compute_gains, CC=self.CC)
-        self.eigenVectorAnalysis()
+        # self.eigenVectorAnalysis()
 
 
 class Landing(LandingStateSpace, BaseFullStateFeedBack):
@@ -281,4 +276,4 @@ class Landing(LandingStateSpace, BaseFullStateFeedBack):
             poles.append(-zeta*omega_n - omega_n*np.sqrt(1 - zeta**2)*1j)
 
         self.K, self.K_r = self.generateGains(self.A, self.B, self.C_r, poles, "landing", compute_gains=compute_gains, CC=self.CC)
-        self.eigenVectorAnalysis()
+        # self.eigenVectorAnalysis()

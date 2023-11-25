@@ -29,5 +29,5 @@ poles = [-0.0730410000000000+0.0183058001464017j;
          -0.0426072500000000+0.0106783834187343j;
          -0.0426072500000000-0.0106783834187343j];
 [K, prec] = place(A, B, poles);
-save('c:\Users\Delli\Documents\GitHub\ControlsFinalProject\controller\landing.mat', 'K', 'prec');
+save('/home/marekbrodke/Dropbox/School/Flight_Mechanics/ControlsFinalProject/controller/landing.mat', 'K', 'prec');
 exit;
