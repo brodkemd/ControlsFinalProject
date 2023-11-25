@@ -125,6 +125,7 @@ class FullStateFeedBack(Base):
         if self.state == 2:
             if x.item(2) > -7000: # determining from position
                 self.state = 1
+                self.check = 0
                 phi_e = 0
                 theta_e = np.deg2rad(90)
                 psi_e = 0
@@ -156,6 +157,12 @@ class FullStateFeedBack(Base):
                 self.x_r[7] = Euler2Quaternion(phi_e, theta_e, psi_e).item(1) # e_1
                 self.x_r[8] = Euler2Quaternion(phi_e, theta_e, psi_e).item(2) # e_2
                 self.x_r[9] = Euler2Quaternion(phi_e, theta_e, psi_e).item(3) # e_3
+        
+        # elif self.state == 0:
+        #     if x.item(2) > -250 and self.check == 0 and np.abs(x.item(3)) < 5:
+        #             self.x_r[0] = -x.item(0)
+        #             self.x_r[1] = x.item(1)
+        #             self.check = 1
     
         if self.state != last_state:
             print("\nChanged state from", last_state, "to", self.state, end="\n\n")
@@ -177,7 +184,10 @@ class FullStateFeedBack(Base):
             u[2] = self.MaxT*0.33
         elif u[2] < -self.MaxT*0.33:
             u[2] = -self.MaxT*0.33
-
+        
+        Total_lat = np.sqrt(u[1]**2 + u[2]**2)
+        if u[0] < Total_lat/np.tan(np.deg2rad(45)):
+            u[0] = Total_lat/np.tan(np.deg2rad(45))
 
         F_E                   = u[0:3]
         F_cp_port_canard      = u[3:6]
@@ -256,8 +266,8 @@ class Landing(LandingStateSpace, BaseFullStateFeedBack):
         print("  Landing:")
         super().__init__()
 
-        self.zetas    =  0.9*np.ones(len(self.A)//2)
-        self.omega_ns = 0.02*np.array([3.0, 1.5, 2.5, 1.25, 1.75]) # [3.0, 1.5, 2.5, 1.25, 1.75]
+        self.zetas    =  0.97*np.ones(len(self.A)//2)
+        self.omega_ns = 0.0251*np.array([3.0, 1.5, 2.5, 1.25, 1.75]) # [3.0, 1.5, 2.5, 1.25, 1.75]
         self.t_r = max(2.2/self.omega_ns)
         self.t_s = max(4/(self.zetas[i]*self.omega_ns[i]) for i in range(len(self.zetas)))
         print("    Max rise time:   ", self.t_r)
