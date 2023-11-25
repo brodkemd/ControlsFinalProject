@@ -18,6 +18,7 @@ class Base:
         self.r_E_z = BODY.r_E_z
         self.r_E   = BODY.r_E
         self.R     = BODY.R
+        self.MaxT  = BODY.maxThrust
 
         self.r_cp_port_canard_x      = BODY.r_cp_port_canard_x
         self.r_cp_port_canard_y      = BODY.r_cp_port_canard_y

@@ -123,7 +123,7 @@ class FullStateFeedBack(Base):
     def update(self, x):
         last_state = self.state
         if self.state == 2:
-            if x.item(2) > -5000: # determining from position
+            if x.item(2) > -7000: # determining from position
                 self.state = 1
                 phi_e = 0
                 theta_e = np.deg2rad(90)
@@ -166,6 +166,18 @@ class FullStateFeedBack(Base):
         #     u = self.flipCP.update(x, self.x_r)
         elif self.state == 2:
             u = self.descentCP.update(x, self.x_r)
+        
+        if u[0] < 0:
+            u[0] = 0
+        if u[1] > self.MaxT*.33:
+            u[1] = self.MaxT*0.33
+        elif u[1] < -self.MaxT*0.33:
+            u[1] = -self.MaxT*0.33
+        if u[2] > self.MaxT*.33:
+            u[2] = self.MaxT*0.33
+        elif u[2] < -self.MaxT*0.33:
+            u[2] = -self.MaxT*0.33
+
 
         F_E                   = u[0:3]
         F_cp_port_canard      = u[3:6]
@@ -222,7 +234,7 @@ class FlipCP(FlipStateSpaceCP, BaseFullStateFeedBack):
         super().__init__()
 
         self.zetas    =  0.707*np.ones(len(self.A)//2)
-        self.omega_ns = 0.1*np.array([3.0, 1.5, 2.5, 1.25, 1, 1.15])
+        self.omega_ns = 0.05*np.array([3.0, 1.5, 2.5, 1.25, 1.75, 1.15]) # [3.0, 1.5, 2.5, 1.25, 1, 1.15]
         self.t_r = max(2.2/self.omega_ns)
         self.t_s = max(4/(self.zetas[i]*self.omega_ns[i]) for i in range(len(self.zetas)))
         print("    Max rise time:   ", self.t_r)
@@ -245,7 +257,7 @@ class Landing(LandingStateSpace, BaseFullStateFeedBack):
         super().__init__()
 
         self.zetas    =  0.9*np.ones(len(self.A)//2)
-        self.omega_ns = 0.05*np.array([3.0, 1.2, 2.5, 1.25, 1.75]) # [3.0, 1.5, 2.5, 1.25, 1.75]
+        self.omega_ns = 0.02*np.array([3.0, 1.5, 2.5, 1.25, 1.75]) # [3.0, 1.5, 2.5, 1.25, 1.75]
         self.t_r = max(2.2/self.omega_ns)
         self.t_s = max(4/(self.zetas[i]*self.omega_ns[i]) for i in range(len(self.zetas)))
         print("    Max rise time:   ", self.t_r)
