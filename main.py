@@ -54,8 +54,8 @@ try:
 
         # loop that runs the dynamics
         while t < t_next_plot:
-            F_E, F_cp, tau, x_r,angles = controller.update(state)            
-            u                   = forces.update(state, F_E, F_cp, tau, angles)
+            F_E, angles, x_r = controller.update(state)            
+            u                   = forces.update(state, F_E, angles)
             y, crash, landed    = dynamics.update(u)
             t += SIM.ts_simulation
             if crash or landed: break

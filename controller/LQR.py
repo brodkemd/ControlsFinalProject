@@ -136,7 +136,7 @@ class LQR(Base):
 
         angles = self.toFinAngles.calc_def(tau, x)
 
-        return F_E, F_cp, tau, self.x_r.copy(), angles
+        return F_E, angles,self.x_r.copy()
 
 
 class DescentCP(DescentStateSpaceCP, BaseFullStateFeedBack):

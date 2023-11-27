@@ -13,8 +13,8 @@ class ForcesMoments:
         self.FMFromCP = ForcesMomentsFromCP()
         self.CPFromAerodynamics = CPFromAerodynamics()
 
-    def update(self, _state, F_E, F_cp, tau,angles):
-        return self.CPFromAerodynamics.update(_state, F_E, tau)
+    def update(self, _state, F_E, angles):
+        return self.CPFromAerodynamics.update(_state, F_E, angles)
 
 
 
@@ -62,7 +62,7 @@ class CPFromAerodynamics:
         # Defines the surface coefficients from flat plate thy [delPortCanard, delStarCanard, delPortFin, delStarFin]
         # Cls = 2*np.pi*delSurf 
         # Cds = 1.28*np.sin(delSurf)
-        Cls = 2*np.pi(np.pi/2 + delSurf)
+        Cls = 2*np.pi*(np.pi/2 + delSurf)
         Cds = 1.28*(1 + delSurf)
 
         rho = BODY.rhoAvg
@@ -72,7 +72,7 @@ class CPFromAerodynamics:
         # Canard forces (portCanard (pc), starboardCanard (sc))
         Fpcx = (Cds[0]*AOA)*(0.5*rho*V**2*A_c)
         Fpcy = Cls[0]*(0.5*rho*V**2*A_c)
-        Fpcz = (-Cd[0] + Cl[0]*AOA)*(0.5*rho*V**2*A_c)
+        Fpcz = (-Cds[0] + Cls[0]*AOA)*(0.5*rho*V**2*A_c)
 
         Fscx = (Cds[1]*AOA)*(0.5*rho*V**2*A_c)
         Fscy = Cls[1]*(0.5*rho*V**2*A_c)
@@ -116,6 +116,9 @@ class CPFromAerodynamics:
         Fsf = np.array([Fsfx,Fsfy,Fsfz])
         Fb = np.array([Fbx, Fby, Fbz])
         # Fe = np.array([FEx, FEy, FEz])
+        self.r_E = BODY.r_E
+        self.m   = BODY.mass
+        self.g   = BODY.gravity
         e_0     = state.item(6)
         e_1     = state.item(7)
         e_2     = state.item(8)
