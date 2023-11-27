@@ -132,7 +132,7 @@ class CPFromAerodynamics:
         Mpf = np.cross(rpf,Fpf)
         Msf = np.cross(rsf,Fsf)
         M = Me + Mpc + Msc + Mpf + Msf + Mb
-
+        
         return F, M, COPrad
 
 
