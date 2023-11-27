@@ -61,25 +61,25 @@ dot_r    = omega_dot[2].subs(vals)
 f_general = zeros(len(x_names), 1)
 for i in range(len(x_names)):
     f_general[i] = eval(f"dot_{x_names[i]}")
-
 write(f_general, "f_general")
 
 
 # control calculation here
 compute_descent = 1
-compute_flip    = 1
-compute_landing = 1
+compute_flip    = 0
+compute_landing = 0
 
+compute_output_transforms = 0
 
 def descentCP():
     log.info("DescentCP")
 
     # variables to control
-    x_vars = "e_1,e_2,e_3,p,q,r".split(",")
-    u_vars = "f_cp_port_canard_y,f_cp_port_canard_z,f_cp_starboard_canard_x,f_cp_starboard_canard_y,f_cp_starboard_canard_z,f_cp_port_fin_x,f_cp_port_fin_y,f_cp_port_fin_z,f_cp_starboard_fin_x,f_cp_starboard_fin_y,f_cp_starboard_fin_z".split(",")
+    x_vars = "p_n,p_e,u,v,e_1,e_2,e_3,p,q,r".split(",")
+    u_vars = "f_cp_port_canard_y,f_cp_port_canard_z,f_cp_starboard_canard_y,f_cp_starboard_canard_z,f_cp_port_fin_y,f_cp_port_fin_z,f_cp_starboard_fin_y,f_cp_starboard_fin_z".split(",")
 
     # reference_params = "p_n,p_e,u,v,w,e_0,e_1,e_2,e_3,p,q,r".split(",") # must be same length as u_vars
-    reference_params = "u,v,w,e_0,e_1,e_2,e_3,p,q,r".split(",") # must be same length as u_vars
+    reference_params = "p_n,p_e,e_1,e_3".split(",") # must be same length as u_vars
 
     phi_e   = rad(0) # has to be this
     theta_e = rad(0) # has to be this
@@ -93,7 +93,7 @@ def descentCP():
         e_2 : Euler2Quaternion(phi_e, theta_e, psi_e)[2],
         e_3 : Euler2Quaternion(phi_e, theta_e, psi_e)[3]
     }
-    fraction_gravity_acceleration = 2
+
     u_e = {
         # f_cp_port_canard_z      : (-m*g/4)/fraction_gravity_acceleration,
         # f_cp_starboard_canard_z : (-m*g/4)/fraction_gravity_acceleration,
@@ -101,28 +101,22 @@ def descentCP():
         # f_cp_starboard_fin_z    : (-m*g/4)/fraction_gravity_acceleration
     }
 
-    if fraction_gravity_acceleration != 1:
-        x_dot_e = {
-            #p_d : 50,
-            #w   :  g/fraction_gravity_acceleration
-        }
-    else:
-        x_dot_e = {
-            # p_d : 50
-        }
+    x_dot_e = {
+        w : g
+    }
 
-    export("descentCP", x_vars, u_vars, reference_params, x_e, x_dot_e, u_e) # computes the state space and saves it to a file
+    export("descentCP", x_vars, u_vars, reference_params, x_e, x_dot_e=x_dot_e, u_e=u_e) # computes the state space and saves it to a file
 
 
 def flipCP():
     print("flipCP")
 
     # variables to control
-    x_vars = "p_n,p_e,p_d,u,v,w,e_1,e_2,e_3,p,q,r".split(",")
-    u_vars = "f_E_x,f_E_y,f_E_z,f_cp_port_canard_y,f_cp_port_canard_z,f_cp_starboard_canard_y,f_cp_starboard_canard_z".split(",")
+    x_vars = "p_n,p_e,v,w,e_1,e_2,e_3,p,q,r".split(",")
+    u_vars = "f_E_x,f_E_y,f_E_z,f_cp_port_canard_y,f_cp_port_canard_z,f_cp_starboard_canard_y,f_cp_starboard_canard_z,f_cp_port_fin_y,f_cp_port_fin_z,f_cp_starboard_fin_y,f_cp_starboard_fin_z".split(",")
     n = len(x_vars)
 
-    reference_params:list = "p_n,p_e,u,v,e_1,e_2,e_3".split(",") # must be same length as u_vars
+    reference_params:list = "p_n,p_e,e_1,e_2,e_3".split(",") # must be same length as u_vars
 
     phi_e   = rad(0)  # dont care, pick 0
     theta_e = rad(90) # has to be this
@@ -150,7 +144,7 @@ def landing():
     u_vars = "f_E_x,f_E_y,f_E_z".split(",")
     n      = len(x_vars)
 
-    reference_params:list = "p_n,p_e,p_d".split(",")
+    reference_params:list = "p_n,p_e,p_d,e_0,e_3".split(",")
 
     #### for landing 
     phi_e   = rad(0)  # dont care, pick 0
@@ -319,7 +313,6 @@ def computeStateSpace(name, x_vars, u_vars, x_e, x_dot_e = None, u_e = None):
 
     # printing out the number of rows and the rank (hopefully they are equal)
     log.info("Computing Controllability Matrix Rank:")
-    time.sleep(0.5)
     rank = CC.rank()
     log.info(2, "done")
     
@@ -338,11 +331,11 @@ def computeStateSpace(name, x_vars, u_vars, x_e, x_dot_e = None, u_e = None):
 
 def computeTransforms(x_vars, u_vars, reference_params, x_e):
     n = len(x_vars)
-    if len(reference_params) != len(u_vars):
-        log.info("Error: len(reference_params) != len(u_vars)")
-        log.info(1, "len(reference_params):", len(reference_params))
-        log.info(1, "len(u_vars):", len(u_vars))
-        exit()
+    # if len(reference_params) != len(u_vars):
+    #     log.info("Error: len(reference_params) != len(u_vars)")
+    #     log.info(1, "len(reference_params):", len(reference_params))
+    #     log.info(1, "len(u_vars):", len(u_vars))
+    #     exit()
 
     global_x_to_local_x = zeros(len(x_vars), len(x_names))
     for i in range(len(x_vars)):
@@ -375,13 +368,27 @@ def computeTransforms(x_vars, u_vars, reference_params, x_e):
 
     return global_x_to_local_x, global_x_r_to_local_x_r, local_u_to_global_u, C_r, y_re
 
-def export(name, x_vars, u_vars, reference_params, x_e, x_dot_e = None, u_e = None):
+def computeOutputTransform():
+    print("Generating total transforms")
+    global_u_to_total_u = zeros(len(total_u_names), len(u_names))
+    for i in range(len(total_u_names)):
+        for j in range(len(u_names)):
+            if total_u_names[i] == u_names[j]:
+                global_u_to_total_u[i,j] = 1
+    writeMathModule("total", global_u_to_total_u=global_u_to_total_u)
+
+def export(name, x_vars, u_vars, reference_params, x_e, x_dot_e = None, u_e = None, check_controllability_with_integrator=False):
     A, B, CC, x_e, u_e = computeStateSpace(name, x_vars, u_vars, x_e, x_dot_e, u_e)
     global_x_to_local_x, global_x_r_to_local_x_r, local_u_to_global_u, C_r, y_re = computeTransforms(x_vars, u_vars, reference_params, x_e)
+    # if check_controllability_with_integrator:
+    #     C = [(A**i)*B for i in range(n)]
+    #     CC = Matrix.hstack(*C)
+    #     log.info("done")
 
-    writeMathModule(name, A=A, B=B, C_r=C_r, CC=CC, x_e=x_e, u_e=u_e, y_re=y_re, global_x_to_local_x=global_x_to_local_x, global_x_r_to_local_x_r=global_x_r_to_local_x_r, local_u_to_global_u=local_u_to_global_u)
+    writeMathModule(name, A=A, B=B, C=C_r, CC=CC, x_e=x_e, u_e=u_e, y_re=y_re, global_x_to_local_x=global_x_to_local_x, global_x_r_to_local_x_r=global_x_r_to_local_x_r, local_u_to_global_u=local_u_to_global_u)
 
 
 if compute_descent: descentCP()
 if compute_flip:    flipCP()
 if compute_landing: landing()
+if compute_output_transforms: computeOutputTransform()

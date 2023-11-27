@@ -104,6 +104,9 @@ class DataPlotter:
             self.fig.tight_layout()
             self.fig.subplots_adjust(hspace=0.06)
 
+            self.fig.canvas.mpl_connect("close_event", self.onClose)
+            self.fig_dashboard.canvas.mpl_connect("close_event", self.onClose)
+
 
         for i in range(len(self.vars)):
             self.vars[i] = re.sub("\s+", "_", self.vars[i])
@@ -119,6 +122,11 @@ class DataPlotter:
                     exec(f"self.{var}_{self.dimension_names[j]} = []")
             else:
                 exec(f"self.{var} = []")
+
+
+    def onClose(self, event):
+        plt.close(self.fig)
+        plt.close(self.fig_dashboard)
 
 
     def formatStringForLatex(self, s:str):

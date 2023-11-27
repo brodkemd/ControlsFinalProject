@@ -1,0 +1,1 @@
+\left[\begin{matrix}0 & 0 & 0 & 0\\0 & 0 & 0 & 0\\\frac{1}{m} & \frac{1}{m} & \frac{1}{m} & \frac{1}{m}\\0 & 0 & 0 & 0\\\frac{1}{J_{zz}} & \frac{1}{J_{zz}} & - \frac{1}{J_{zz}} & - \frac{1}{J_{zz}}\end{matrix}\right]
