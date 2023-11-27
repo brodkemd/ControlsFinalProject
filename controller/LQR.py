@@ -142,7 +142,7 @@ class LQR(Base):
                 angles[i] = np.deg2rad(-180)
 
         print(np.rad2deg(angles))
-        return F_E, angles,self.x_r.copy()
+        return F_E, angles, self.x_r.copy()
 
 
 class DescentCP(DescentStateSpaceCP, BaseFullStateFeedBack):
