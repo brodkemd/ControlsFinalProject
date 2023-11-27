@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np
-import platform, os, traceback
+import platform, os, traceback, warnings
+warnings.filterwarnings("error")
 
 import parameters.simulation_parameters as SIM
 import parameters.body_parameters       as P

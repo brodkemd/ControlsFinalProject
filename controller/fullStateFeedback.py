@@ -2,13 +2,11 @@ from controller.stateSpace import LandingStateSpace, FlipStateSpaceCP, DescentSt
 from controller.baseFullStateFeedback import BaseFullStateFeedBack
 from tools.rotations import Euler2Quaternion
 from parameters.baseClass import Base
-from parameters import simulation_parameters as SIM
 from tools.loadMathModule import LoadModule
 from controller.deflectioncalc import deflection_calc
 
 import numpy as np
-import os, warnings
-warnings.filterwarnings("error")
+import os
 
 
 class FullStateFeedBack(Base):
@@ -136,9 +134,9 @@ class FullStateFeedBack(Base):
 
         tau = tau_cp_port_canard + tau_cp_port_fin + tau_cp_starboard_canard + tau_cp_starboard_fin
 
-        self.toFinAngles.calc_def()
+        angles = np.array(self.toFinAngles.calc_def(tau, x))
 
-        return F_E, F_cp, tau, self.x_r.copy()
+        return F_E, angles, self.x_r.copy()
 
 
 class DescentCP(DescentStateSpaceCP, BaseFullStateFeedBack):
