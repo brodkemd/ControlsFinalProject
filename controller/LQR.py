@@ -17,7 +17,7 @@ class LQR(Base):
         print("\nLQR:")
         self.landing    = Landing(compute_gains=compute_gains)
         self.descentCP   = DescentCP(compute_gains=compute_gains)
-        self.flipCP      = FlipCP(compute_gains=False)
+        self.flipCP      = FlipCP(compute_gains=compute_gains)
         self.toFinAngles = deflection_calc()
         print("  Loading Transforms: ", end="")
         cwd = os.path.dirname(__file__)
