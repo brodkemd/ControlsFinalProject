@@ -133,7 +133,7 @@ class LQR(Base):
         tau_cp_starboard_fin    = np.cross(   self.r_cp_starboard_fin,    F_cp_starboard_fin)
 
         tau = tau_cp_port_canard + tau_cp_port_fin + tau_cp_starboard_canard + tau_cp_starboard_fin
-
+        print(tau)
         angles = self.toFinAngles.calc_def(tau, x)
         for i in range(0,len(angles)):
             if np.abs(angles[i]) < 0:
@@ -141,7 +141,7 @@ class LQR(Base):
             elif np.abs(angles[i]) > np.abs(np.deg2rad(-180)):
                 angles[i] = np.deg2rad(-180)
 
-        print(np.rad2deg(angles))
+        # print(x[2])
         return F_E, angles,self.x_r.copy()
 
 

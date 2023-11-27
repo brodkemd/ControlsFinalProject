@@ -148,8 +148,8 @@ class CPFromAerodynamics:
         Msc = np.cross(rsc,Fsc)
         Mpf = np.cross(rpf,Fpf)
         Msf = np.cross(rsf,Fsf)
-        M = Me + Mpc + Msc + Mpf + Msf + Mb
-        
+        M = Me + Mpc + Msc + Mpf + Msf #+ Mb
+        # print(M)
         return np.hstack((F, M))
 
 
