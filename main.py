@@ -66,7 +66,7 @@ try:
         # plotting the state variables and forces with respect to time
         if include_plotter or write_data_to_file:
             response = [[y.item(i), x_r.item(i)] for i in range(len(y))]
-            plotter.update(t, response, F_E.tolist() + F_cp.tolist() + tau.tolist())
+            # plotter.update(t, response, F_E.tolist() + F_cp.tolist() + tau.tolist())
 
         # saving image of figure if on a valid timestep
         if include_plotter and make_output:
