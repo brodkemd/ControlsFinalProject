@@ -4,6 +4,7 @@ from tools.rotations import Euler2Quaternion
 from parameters.baseClass import Base
 from parameters import simulation_parameters as SIM
 from tools.loadMathModule import LoadModule
+from controller.deflectioncalc import deflection_calc
 
 import numpy as np
 import os, warnings
@@ -17,9 +18,9 @@ class FullStateFeedBack(Base):
         super().__init__()
         print("\nFullStateFeedBack:")
         # self.landing    = Landing(compute_gains=False, add_integrator=False)
-        self.descentCP  = DescentCP(compute_gains=compute_gains, add_integrator=False)
-        self.flipCP     = FlipCP(compute_gains=False, add_integrator=False)
-
+        self.descentCP   = DescentCP(compute_gains=compute_gains, add_integrator=False)
+        self.flipCP      = FlipCP(compute_gains=False, add_integrator=False)
+        self.toFinAngles = deflection_calc()
         print("    Loading Transforms: ", end="")
         cwd = os.path.dirname(__file__)
         LoadModule(os.path.join(cwd, "total.h"), self)
@@ -134,6 +135,8 @@ class FullStateFeedBack(Base):
         tau_cp_starboard_fin    = np.cross(   self.r_cp_starboard_fin,    F_cp_starboard_fin)
 
         tau = tau_cp_port_canard + tau_cp_port_fin + tau_cp_starboard_canard + tau_cp_starboard_fin
+
+        self.toFinAngles.calc_def()
 
         return F_E, F_cp, tau, self.x_r.copy()
 
