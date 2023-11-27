@@ -13,12 +13,17 @@ class deflection_calc:
         self.A_f = BODY.AsurfF
         self.rho = BODY.rhoAvg
 
-    def calc_def(self,Mx,My,Mz,AOA,V):
+    def calc_def(self,M,state):
+        AOA = np.arctan2(state[5],state[3])
+        V = np.sqrt(state[3]**2 + state[4]**2 + state[5]**2)
         Fy = 0
         A_c = self.A_c
         A_f = self.A_f
         rho = self.rho
         AOA -= np.deg2rad(90)
+        Mx = M[0]
+        My = M[1]
+        Mz = M[2]
         if AOA == 0:
             delta_sc = (-21755.5291261093*AOA*self.A_c*Mz - 909465.715980001*self.A_c**2*V**2*self.rho + 1155468.73751558*self.A_c*self.A_f*V**2*self.rho + 75640.0*self.A_c*Fy - 21755.5291261093*self.A_c*My + 3904.0*self.A_c*Mz - 96100.0*self.A_f*Fy - 4960.0*self.A_f*Mz)/(424667.928541654*self.A_c**2*V**2*self.rho - 539537.122327511*self.A_c*self.A_f*V**2*self.rho)
             delta_pc = (25.0*AOA*Mz - 488.0*self.A_c*V**2*self.rho + 620.0*self.A_f*V**2*self.rho + 25.0*My)/(488.0*self.A_c*V**2*self.rho - 620.0*self.A_f*V**2*self.rho)
