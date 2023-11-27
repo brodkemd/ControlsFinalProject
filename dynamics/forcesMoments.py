@@ -55,26 +55,32 @@ class CPFromAerodynamics:
 
         # surface forces 
         # Defines the surface coefficients from flat plate thy [delPortCanard, delStarCanard, delPortFin, delStarFin]
-        Cls = 2*np.pi*delSurf 
-        Cds = 1.28*np.sin(delSurf)
+        # Cls = 2*np.pi*delSurf 
+        # Cds = 1.28*np.sin(delSurf)
+        Cls = 2*np.pi(np.pi/2 + delSurf)
+        Cds = 1.28*(1 + delSurf)
+
+        rho = BODY.rhoAvg
+        A_c = BODY.AsurfC
+        A_f = BODY.AsurfF
 
         # Canard forces (portCanard (pc), starboardCanard (sc))
-        Fpcx = (-Cds[0]*np.cos(AOA)*np.cos(B) - Cls[0]*np.sin(AOA)*np.sin(B))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfC)
-        Fpcy = (Cds[0]*np.cos(AOA)*np.sin(B) - Cls[0]*np.sin(AOA)*np.cos(B))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfC)
-        Fpcz = (-Cds[0]*np.sin(AOA))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfC)
+        Fpcx = (Cds[0]*AOA)*(0.5*rho*V**2*A_c)
+        Fpcy = Cls[0]*(0.5*rho*V**2*A_c)
+        Fpcz = (-Cd[0] + Cl[0]*AOA)*(0.5*rho*V**2*A_c)
 
-        Fscx = (-Cds[1]*np.cos(AOA)*np.cos(B) + Cls[1]*np.sin(AOA)*np.sin(B))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfC)
-        Fscy = (Cds[1]*np.cos(AOA)*np.sin(B) + Cls[1]*np.sin(AOA)*np.cos(B))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfC)
-        Fscz = (-Cds[1]*np.sin(AOA))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfC)
+        Fscx = (Cds[1]*AOA)*(0.5*rho*V**2*A_c)
+        Fscy = Cls[1]*(0.5*rho*V**2*A_c)
+        Fscz = (-Cds[1] + Cls[1]*AOA)*(0.5*rho*V**2*A_c)
  
         # Fin forces (portFin (pf), starboardFin (sf))
-        Fpfx = (-Cds[2]*np.cos(AOA)*np.cos(B) - Cls[2]*np.sin(AOA)*np.sin(B))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfF)
-        Fpfy = (Cds[2]*np.cos(AOA)*np.sin(B) - Cls[2]*np.sin(AOA)*np.cos(B))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfF)
-        Fpfz = (-Cds[2]*np.sin(AOA))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfF)
+        Fpfx = (Cds[2]*AOA)*(0.5*rho*V**2*A_f)
+        Fpfy = Cls[2]*(0.5*rho*V**2*A_f)
+        Fpfz = (-Cds[2] + Cls[2]*AOA)*(0.5*rho*V**2*A_f)
 
-        Fsfx = (-Cds[3]*np.cos(AOA)*np.cos(B) + Cls[3]*np.sin(AOA)*np.sin(B))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfF)
-        Fsfy = (Cds[3]*np.cos(AOA)*np.sin(B) + Cls[3]*np.sin(AOA)*np.cos(B))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfF)
-        Fsfz = (-Cds[3]*np.sin(AOA))*(0.5*BODY.rhoAvg*(V**2)*BODY.AsurfF)
+        Fsfx = (Cds[3]*AOA)*(0.5*rho*V**2*A_f)
+        Fsfy = Cls[3]*(0.5*rho*V**2*A_f)
+        Fsfz = (-Cds[3] + Cls[3]*AOA)*(0.5*rho*V**2*A_f)
         
         # Total forces
         Fsx = Fpcx + Fscx + Fpfx + Fsfx
