@@ -40,7 +40,7 @@ if not show_figures:
 
 state      = P.initial_state.copy()
 #controller = FullStateFeedBack(compute_gains=True)
-controller = LQR(compute_gains=True)
+controller = LQR(compute_gains=False)
 dynamics   = Dynamics(state)
 forces     = ForcesMoments()
 
@@ -54,7 +54,7 @@ try:
 
         # loop that runs the dynamics
         while t < t_next_plot:
-            F_E, angles, x_r = controller.update(state)            
+            F_E, angles, x_r    = controller.update(state)            
             u                   = forces.update(state, F_E, angles)
             y, crash, landed    = dynamics.update(u)
             t += SIM.ts_simulation
@@ -66,7 +66,7 @@ try:
         # plotting the state variables and forces with respect to time
         if include_plotter or write_data_to_file:
             response = [[y.item(i), x_r.item(i)] for i in range(len(y))]
-            # plotter.update(t, response, F_E.tolist() + F_cp.tolist() + tau.tolist())
+            plotter.update(t, response, F_E.tolist() + angles.tolist())
 
         # saving image of figure if on a valid timestep
         if include_plotter and make_output:

@@ -17,7 +17,7 @@ class LQR(Base):
         print("\nLQR:")
         self.landing    = Landing(compute_gains=compute_gains)
         self.descentCP   = DescentCP(compute_gains=compute_gains)
-        self.flipCP      = FlipCP(compute_gains=False)
+        self.flipCP      = FlipCP(compute_gains=compute_gains)
         self.toFinAngles = deflection_calc()
         print("  Loading Transforms: ", end="")
         cwd = os.path.dirname(__file__)
@@ -141,8 +141,13 @@ class LQR(Base):
             elif np.abs(angles[i]) > np.abs(np.deg2rad(-180)):
                 angles[i] = np.deg2rad(-180)
 
+<<<<<<< HEAD
         # print(x[2])
         return F_E, angles,self.x_r.copy()
+=======
+        print(np.rad2deg(angles))
+        return F_E, angles, self.x_r.copy()
+>>>>>>> ab5c3c4215cc1992f13a6bb58599c1920eb680e6
 
 
 class DescentCP(DescentStateSpaceCP, BaseFullStateFeedBack):

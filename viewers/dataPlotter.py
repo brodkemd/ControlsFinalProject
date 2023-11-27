@@ -14,14 +14,14 @@ def wrapString(s):
 class DataPlotter:
     special_words       = ["phi", "theta", "psi", "alpha", "beta", "delta", "Omega"]
 
-    inputs              = ["f_E_x","f_E_y","f_E_z","f_cp_x","f_cp_y","f_cp_z","r_cp_x","r_cp_y","r_cp_z"]
+    inputs              = ["f_E_x","f_E_y","f_E_z", "delta_pc", "delta_sc", "delta_pf", "delta_sf"]
     inputs_lengths      = np.zeros(len(inputs)).tolist()
 
     vars                = ["p_n", "p_e", "p_d", "u", "v", "w", "e_0", "e_1", "e_2", "e_3", "p", "q", "r"]
     vars_lengths        = (2*np.ones(len(vars), dtype=int)).tolist()
 
-    layout = (6, 3)
-    dashboard_layout = (3, 3)
+    layout = (5, 3)
+    dashboard_layout = (2, 4)
 
     plot = True
     dimension_names = ["Actual", "Reference"]#, "Down"]
