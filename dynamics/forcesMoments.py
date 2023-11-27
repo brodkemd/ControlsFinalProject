@@ -42,9 +42,9 @@ class CPFromAerodynamics:
 
         '''
         # Defines the coefficients based on the current Mach and AOA
-        Cd = self.Cdf(0) + self.Cdf(1)*M + self.Cdf(2)*AOA + self.Cdf(3)*M**2 + self.Cdf(4)*M*AOA + self.Cdf(5)*AOA**2 + self.Cdf(6)*(M**2)*AOA + self.Cdf(7)*M*(AOA**2) + self.Cdf(8)*AOA**3
-        Cl = self.Clf(0) + self.Clf(1)*M + self.Clf(2)*AOA + self.Clf(3)*M**2 + self.Clf(4)*M*AOA + self.Clf(5)*AOA**2 + self.Clf(6)*(M**2)*AOA + self.Clf(7)*M*(AOA**2) + self.Clf(8)*AOA**3
-        Cm = self.Cmf(0) + self.Cmf(1)*M + self.Cmf(2)*AOA + self.Cmf(3)*M**2 + self.Cmf(4)*M*AOA + self.Cmf(5)*AOA**2 + self.Cmf(6)*(M**2)*AOA + self.Cmf(7)*M*(AOA**2) + self.Cmf(8)*AOA**3
+        Cd = self.Cdf[0] + self.Cdf[1]*M + self.Cdf[2]*AOA + self.Cdf[3]*M**2 + self.Cdf[4]*M*AOA + self.Cdf[5]*AOA**2 + self.Cdf[6]*(M**2)*AOA + self.Cdf[7]*M*(AOA**2) + self.Cdf[8]*AOA**3
+        Cl = self.Clf[0] + self.Clf[1]*M + self.Clf[2]*AOA + self.Clf[3]*M**2 + self.Clf[4]*M*AOA + self.Clf[5]*AOA**2 + self.Clf[6]*(M**2)*AOA + self.Clf[7]*M*(AOA**2) + self.Clf[8]*AOA**3
+        Cm = self.Cmf[0] + self.Cmf[1]*M + self.Cmf[2]*AOA + self.Cmf[3]*M**2 + self.Cmf[4]*M*AOA + self.Cmf[5]*AOA**2 + self.Cmf[6]*(M**2)*AOA + self.Cmf[7]*M*(AOA**2) + self.Cmf[8]*AOA**3
         # Calculates the current velocity based on Mach
         V = M*(BODY.gamma*BODY.R*BODY.Tavg)
         # Calculates the forces for the body and the control surfaces
