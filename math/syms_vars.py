@@ -82,10 +82,10 @@ tau_cp_starboard_fin    = r_cp_starboard_fin.cross(F_cp_starboard_fin)
 
 tau_control = tau_cp_port_canard + tau_cp_port_fin + tau_cp_starboard_canard + tau_cp_starboard_fin
 
-# f_cp_port_canard_x_val      = 0
-# f_cp_starboard_canard_x_val = 0
-# f_cp_port_fin_x_val         = 0
-# f_cp_starboard_fin_x_val    = 0
+f_cp_port_canard_x_val      = 0
+f_cp_starboard_canard_x_val = 0
+f_cp_port_fin_x_val         = 0
+f_cp_starboard_fin_x_val    = 0
 
 r_cp_port_canard_x_val      =  1
 r_cp_port_canard_y_val      = -1
@@ -124,5 +124,8 @@ default_values_u = {
     f_cp_starboard_fin_z    : 0
 }
 
+# do not change the next line unless you really know what you are doing, it could be very bad
+total_u_names = "f_E_x,f_E_y,f_E_z,f_cp_port_canard_x,f_cp_port_canard_y,f_cp_port_canard_z,f_cp_starboard_canard_x,f_cp_starboard_canard_y,f_cp_starboard_canard_z,f_cp_port_fin_x,f_cp_port_fin_y,f_cp_port_fin_z,f_cp_starboard_fin_x,f_cp_starboard_fin_y,f_cp_starboard_fin_z".split(",")
+
 x_names = "p_n,p_e,p_d,u,v,w,e_0,e_1,e_2,e_3,p,q,r".split(",")
-u_names = "f_E_x,f_E_y,f_E_z,f_cp_port_canard_x,f_cp_port_canard_y,f_cp_port_canard_z,f_cp_starboard_canard_x,f_cp_starboard_canard_y,f_cp_starboard_canard_z,f_cp_port_fin_x,f_cp_port_fin_y,f_cp_port_fin_z,f_cp_starboard_fin_x,f_cp_starboard_fin_y,f_cp_starboard_fin_z".split(",")
+u_names = "f_E_x,f_E_y,f_E_z,f_cp_port_canard_y,f_cp_port_canard_z,f_cp_starboard_canard_y,f_cp_starboard_canard_z,f_cp_port_fin_y,f_cp_port_fin_z,f_cp_starboard_fin_y,f_cp_starboard_fin_z".split(",")

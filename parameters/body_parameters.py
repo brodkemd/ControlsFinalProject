@@ -37,7 +37,7 @@ psi   = 0
 
 # defining the initial state
 initial_state = np.array([
-    0, # p_n
+    -10, # p_n
     0, # p_e
    -11000, # p_d
     0, # u
