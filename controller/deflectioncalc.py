@@ -4,6 +4,8 @@
 #delta_pc: (25.0*AOA*Mz - 488.0*A_c*V**2*rho + 620.0*A_f*V**2*rho + 25.0*My)/(488.0*A_c*V**2*rho - 620.0*A_f*V**2*rho)
 #delta_sf: (28434476.5678249*AOA**2*A_c*Mz + 316815354.09096*AOA*A_c**2*V**2*rho - 1303051520.57752*AOA*A_c*A_f*V**2*rho - 9243940.0*AOA*A_c*Fy + 28434476.5678249*AOA*A_c*My - 5186464.0*AOA*A_c*Mz + 1144128955.39408*AOA*A_f**2*V**2*rho + 11744350.0*AOA*A_f*Fy + 6589360.0*AOA*A_f*Mz - 13517600.0*A_c*Mx + 17174000.0*A_f*Mx)/(573301703.531233*AOA*A_c*A_f*V**2*rho - 728375115.14214*AOA*A_f**2*V**2*rho)
 #delta_pf: (-28434476.5678249*AOA**2*A_c*Mz - 316815354.09096*AOA*A_c**2*V**2*rho - 498028899.526717*AOA*A_c*A_f*V**2*rho + 89617540.0*AOA*A_c*Fy - 28434476.5678249*AOA*A_c*My - 83936.0*AOA*A_c*Mz + 1144128955.39408*AOA*A_f**2*V**2*rho - 113858350.0*AOA*A_f*Fy + 106640.0*AOA*A_f*Mz + 13517600.0*A_c*Mx - 17174000.0*A_f*Mx)/(573301703.531233*AOA*A_c*A_f*V**2*rho - 728375115.14214*AOA*A_f**2*V**2*rho)
+import sys
+sys.path.append('.')
 import parameters.body_parameters as BODY
 import numpy as np
 
@@ -39,7 +41,7 @@ class deflection_calc:
             delta_sc = np.abs(delta_pc + np.deg2rad(90))
             delta_pc += np.deg2rad(90)
             delta_sf = np.abs(delta_pf + np.deg2rad(90))
-            delta_pf += np.deg2rad(90)
+            delta_pf = np.abs(delta_pf + np.deg2rad(90))
         
         return delta_pc,delta_sc,delta_pf,delta_sf
 
