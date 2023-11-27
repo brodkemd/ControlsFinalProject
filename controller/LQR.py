@@ -1,6 +1,6 @@
 from controller.stateSpace import LandingStateSpace, FlipStateSpaceCP, DescentStateSpaceCP, BaseStateSpace
 from controller.baseLQR import BaseFullStateFeedBack
-from tools.rotations import Euler2Quaternion
+from tools.rotations import Euler2Quaternion, Quaternion2Euler
 from parameters.baseClass import Base
 from tools.loadMathModule import LoadModule
 from controller.deflectioncalc import deflection_calc
@@ -15,7 +15,7 @@ class LQR(Base):
     def __init__(self, compute_gains=False) -> None:
         super().__init__()
         print("\nLQR:")
-        # self.landing    = Landing(compute_gains=False)
+        self.landing    = Landing(compute_gains=compute_gains)
         self.descentCP   = DescentCP(compute_gains=compute_gains)
         self.flipCP      = FlipCP(compute_gains=False)
         self.toFinAngles = deflection_calc()
@@ -47,47 +47,47 @@ class LQR(Base):
 
     def update(self, x):
         last_state = self.state
-        # if self.state == 2:
-        #     if x.item(2) > -7000: # determining from position
-        #         self.state = 1
-        #         self.check = 0
-        #         phi_e = 0
-        #         theta_e = np.deg2rad(90)
-        #         psi_e = 0
-        #         self.x_r[6] = Euler2Quaternion(phi_e, theta_e, psi_e).item(0) # e_0
-        #         self.x_r[7] = Euler2Quaternion(phi_e, theta_e, psi_e).item(1) # e_1
-        #         self.x_r[8] = Euler2Quaternion(phi_e, theta_e, psi_e).item(2) # e_2
-        #         self.x_r[9] = Euler2Quaternion(phi_e, theta_e, psi_e).item(3) # e_3
+        if self.state == 2:
+            if x.item(2) > -7000: # determining from position
+                self.state = 1
+                self.check = 0
+                phi_e = 0
+                theta_e = np.deg2rad(90)
+                psi_e = 0
+                self.x_r[6] = Euler2Quaternion(phi_e, theta_e, psi_e).item(0) # e_0
+                self.x_r[7] = Euler2Quaternion(phi_e, theta_e, psi_e).item(1) # e_1
+                self.x_r[8] = Euler2Quaternion(phi_e, theta_e, psi_e).item(2) # e_2
+                self.x_r[9] = Euler2Quaternion(phi_e, theta_e, psi_e).item(3) # e_3
 
-        #     else:
-        #         phi_e = 0
-        #         theta_e = 0
-        #         psi_e = 0
-        #         self.x_r[6] = Euler2Quaternion(phi_e, theta_e, psi_e).item(0) # e_0
-        #         self.x_r[7] = Euler2Quaternion(phi_e, theta_e, psi_e).item(1) # e_1
-        #         self.x_r[8] = Euler2Quaternion(phi_e, theta_e, psi_e).item(2) # e_2
-        #         self.x_r[9] = Euler2Quaternion(phi_e, theta_e, psi_e).item(3) # e_3
+            else:
+                phi_e = 0
+                theta_e = 0
+                psi_e = 0
+                self.x_r[6] = Euler2Quaternion(phi_e, theta_e, psi_e).item(0) # e_0
+                self.x_r[7] = Euler2Quaternion(phi_e, theta_e, psi_e).item(1) # e_1
+                self.x_r[8] = Euler2Quaternion(phi_e, theta_e, psi_e).item(2) # e_2
+                self.x_r[9] = Euler2Quaternion(phi_e, theta_e, psi_e).item(3) # e_3
         
-        # elif self.state == 1:
-        #     phi_e = 0
-        #     theta_e = 90
-        #     psi_e = 0
+        elif self.state == 1:
+            phi_e = 0
+            theta_e = 90
+            psi_e = 0
 
-        #     e = x[6:10]
-        #     theta = np.rad2deg(Quaternion2Euler(e)[1])
-        #     if abs(theta_e - theta) < 10:
-        #         theta_e = np.deg2rad(theta_e)
-        #         self.state = 0
-        #         self.x_r[6] = Euler2Quaternion(phi_e, theta_e, psi_e).item(0) # e_0
-        #         self.x_r[7] = Euler2Quaternion(phi_e, theta_e, psi_e).item(1) # e_1
-        #         self.x_r[8] = Euler2Quaternion(phi_e, theta_e, psi_e).item(2) # e_2
-        #         self.x_r[9] = Euler2Quaternion(phi_e, theta_e, psi_e).item(3) # e_3
+            e = x[6:10]
+            theta = np.rad2deg(Quaternion2Euler(e)[1])
+            if abs(theta_e - theta) < 10:
+                theta_e = np.deg2rad(theta_e)
+                self.state = 0
+                self.x_r[6] = Euler2Quaternion(phi_e, theta_e, psi_e).item(0) # e_0
+                self.x_r[7] = Euler2Quaternion(phi_e, theta_e, psi_e).item(1) # e_1
+                self.x_r[8] = Euler2Quaternion(phi_e, theta_e, psi_e).item(2) # e_2
+                self.x_r[9] = Euler2Quaternion(phi_e, theta_e, psi_e).item(3) # e_3
         
-        # elif self.state == 0:
-        #     if x.item(2) > -250 and self.check == 0 and np.abs(x.item(3)) < 5:
-        #             self.x_r[0] = -x.item(0)
-        #             self.x_r[1] = x.item(1)
-        #             self.check = 1
+        elif self.state == 0:
+            if x.item(2) > -250 and self.check == 0 and np.abs(x.item(3)) < 5:
+                    self.x_r[0] = -x.item(0)
+                    self.x_r[1] = x.item(1)
+                    self.check = 1
     
         if self.state != last_state:
             print("\nChanged state from", last_state, "to", self.state, end="\n\n")
@@ -134,9 +134,9 @@ class LQR(Base):
 
         tau = tau_cp_port_canard + tau_cp_port_fin + tau_cp_starboard_canard + tau_cp_starboard_fin
 
-        # angles = self.toFinAngles.calc_def(tau, x)
+        angles = self.toFinAngles.calc_def(tau, x)
 
-        return F_E, F_cp, tau, self.x_r.copy()
+        return F_E, F_cp, tau, self.x_r.copy(), angles
 
 
 class DescentCP(DescentStateSpaceCP, BaseFullStateFeedBack):
@@ -169,6 +169,6 @@ class Landing(LandingStateSpace, BaseFullStateFeedBack):
         LandingStateSpace.__init__(self)
 
         self.Q_diagonal = 1/(0.1**2)*np.ones(self.A.shape[0])
-        self.R_diagonal = np.ones(self.B.shape[1])
+        self.R_diagonal = (0.1)*np.ones(self.B.shape[1])
         self.computeQR()
         self.generateGains(compute_gains=compute_gains, add_integrator=add_integrator)

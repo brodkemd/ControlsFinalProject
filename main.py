@@ -4,6 +4,7 @@ import numpy as np
 import platform, os, traceback, warnings
 warnings.filterwarnings("error")
 
+
 import parameters.simulation_parameters as SIM
 import parameters.body_parameters       as P
 from viewers.animation                  import Animation
@@ -13,8 +14,8 @@ from dynamics.forcesMoments             import ForcesMoments
 from controller.LQR                     import LQR
 
 make_output        = 0
-show_figures       = 0
-include_animation  = 0
+show_figures       = 1
+include_animation  = 1
 include_plotter    = 0
 write_data_to_file = 1
 
@@ -53,8 +54,8 @@ try:
 
         # loop that runs the dynamics
         while t < t_next_plot:
-            F_E, F_cp, tau, x_r = controller.update(state)
-            u                   = forces.update(state, F_E, F_cp, tau)
+            F_E, F_cp, tau, x_r,angles = controller.update(state)            
+            u                   = forces.update(state, F_E, F_cp, tau, angles)
             y, crash, landed    = dynamics.update(u)
             t += SIM.ts_simulation
             if crash or landed: break

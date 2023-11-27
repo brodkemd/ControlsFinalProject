@@ -11,10 +11,10 @@ class ForcesMoments:
     def __init__(self) -> None:
         #Need locations from the c.g. of the canards and fins
         self.FMFromCP = ForcesMomentsFromCP()
-        # self.CPFromAerodynamics = CPFromAerodynamics()
+        self.CPFromAerodynamics = CPFromAerodynamics()
 
-    def update(self, _state, F_E, F_cp, tau):
-        return self.FMFromCP.update(_state, F_E, F_cp, tau)
+    def update(self, _state, F_E, F_cp, tau,angles):
+        return self.CPFromAerodynamics.update(_state, F_E, tau)
 
 
 
@@ -22,13 +22,13 @@ class CPFromAerodynamics:
     
     def __init__(self) -> None:
         # Surface fit coefficients for the force and moments
-        self.Cdf = np.array[0.03605, -0.01182, -0.0001243, 0.01985, -0.0001574, 7.297E-5, 0.001095, -8.369E-6, -6.47E-7]
-        self.Clf = np.array[0.01872, -0.07913, -0.002173, 0.06861, 0.004314, 0.0001143, -0.002112, -2.849E-5, -1.013E-6]
-        self.Cmf = np.array[-0.02598, 0.1033, 0.0002977, -0.08253, -0.003769, -0.0002425, -0.001543, 5.302E-5, 2.275E-6]
+        self.Cdf = np.array([0.03605, -0.01182, -0.0001243, 0.01985, -0.0001574, 7.297E-5, 0.001095, -8.369E-6, -6.47E-7])
+        self.Clf = np.array([0.01872, -0.07913, -0.002173, 0.06861, 0.004314, 0.0001143, -0.002112, -2.849E-5, -1.013E-6])
+        self.Cmf = np.array([-0.02598, 0.1033, 0.0002977, -0.08253, -0.003769, -0.0002425, -0.001543, 5.302E-5, 2.275E-6])
        
         pass
 
-    def update(self, M, AOA, B, delSurf, delT):
+    def update(self, state, F_E, delSurf):
         '''
         Inputs:
         M = Current Mach
@@ -41,13 +41,18 @@ class CPFromAerodynamics:
         Inverted 
 
         '''
+        V = np.sqrt(state[3]**2 + state[4]**2 + state[5]**2)
+        AOA = np.arctan2(state[5],state[3])
+        B = np.arctan2(state[4],V)
+        AOA = np.rad2deg(AOA)
+        # Calculates the current MACH
+        M = V/(BODY.gamma*BODY.R*BODY.Tavg)
         # Defines the coefficients based on the current Mach and AOA
         Cd = self.Cdf[0] + self.Cdf[1]*M + self.Cdf[2]*AOA + self.Cdf[3]*M**2 + self.Cdf[4]*M*AOA + self.Cdf[5]*AOA**2 + self.Cdf[6]*(M**2)*AOA + self.Cdf[7]*M*(AOA**2) + self.Cdf[8]*AOA**3
         Cl = self.Clf[0] + self.Clf[1]*M + self.Clf[2]*AOA + self.Clf[3]*M**2 + self.Clf[4]*M*AOA + self.Clf[5]*AOA**2 + self.Clf[6]*(M**2)*AOA + self.Clf[7]*M*(AOA**2) + self.Clf[8]*AOA**3
         Cm = self.Cmf[0] + self.Cmf[1]*M + self.Cmf[2]*AOA + self.Cmf[3]*M**2 + self.Cmf[4]*M*AOA + self.Cmf[5]*AOA**2 + self.Cmf[6]*(M**2)*AOA + self.Cmf[7]*M*(AOA**2) + self.Cmf[8]*AOA**3
-        # Calculates the current velocity based on Mach
-        V = M*(BODY.gamma*BODY.R*BODY.Tavg)
         # Calculates the forces for the body and the control surfaces
+        AOA = np.deg2rad(AOA)
         # body forces
         Fbx = (-Cd*np.cos(AOA) - Cl*np.sin(AOA))*(0.5*BODY.rhoAvg*(V**2)*BODY.Aref)*np.cos(B)
         Fby = (-Cd*np.cos(AOA) - Cl*np.sin(AOA))*(0.5*BODY.rhoAvg*(V**2)*BODY.Aref)*np.sin(B)
@@ -88,9 +93,9 @@ class CPFromAerodynamics:
         Fsz = Fpcz + Fscz + Fpfz + Fsfz
 
         #Engine forces
-        FEx = BODY.maxThrust*delT[0]
-        FEy = BODY.maxThrust*delT[1]
-        FEz = BODY.maxThrust*delT[2]
+        # FEx = BODY.maxThrust*delT[0]
+        # FEy = BODY.maxThrust*delT[1]
+        # FEz = BODY.maxThrust*delT[2]
 
         # radii vectors of all the surfaces (from COM)
         # Port Canard [rpc] = (15.25, -6.535, 0) (x,y,z)
@@ -110,7 +115,16 @@ class CPFromAerodynamics:
         Fpf = np.array([Fpfx,Fpfy,Fpfz])
         Fsf = np.array([Fsfx,Fsfy,Fsfz])
         Fb = np.array([Fbx, Fby, Fbz])
-        Fe = np.array([FEx, FEy, FEz])
+        # Fe = np.array([FEx, FEy, FEz])
+        e_0     = state.item(6)
+        e_1     = state.item(7)
+        e_2     = state.item(8)
+        e_3     = state.item(9)
+        F_g = self.m*self.g*np.array([
+            2*(e_1*e_3 - e_2*e_0),
+            2*(e_2*e_3 +  e_1*e_0),
+            e_3**2 + e_0**2 - e_1**2 - e_2**2
+        ])
 
         # Calculates the radius vector of the center of pressure
         PortCanard = np.cross(Fpc,np.cross(rpc,Fpc))
@@ -122,18 +136,18 @@ class CPFromAerodynamics:
 
         # Calculates the total forces and moments
         # Forces (just body acting at COM)
-        F = Fb
+        F = Fb + F_E + F_g + Fpc + Fsc + Fpf + Fsf
         # Body moment using the Cm eqn (moments only in y-dir)
         Mb = np.array([0, Cm*(0.5*BODY.rhoAvg*(V**2)*BODY.Aref), 0])
         # Moments (surface + engine torques)
-        Me = np.cross(re,Fe)
+        Me = np.cross(re,F_E)
         Mpc = np.cross(rpc,Fpc)
         Msc = np.cross(rsc,Fsc)
         Mpf = np.cross(rpf,Fpf)
         Msf = np.cross(rsf,Fsf)
         M = Me + Mpc + Msc + Mpf + Msf + Mb
         
-        return F, M, COPrad
+        return np.hstack((F, M))
 
 
 class ForcesMomentsFromCP:
