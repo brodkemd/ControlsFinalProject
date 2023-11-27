@@ -20,11 +20,18 @@ def arrToStr(arr:np.ndarray, joins=[], starts=[], ends=[], num_format=":.16f", p
 
 def numToStr(num, format=":.16f", pad="", shift_for_minus=False):
     num_str = ""
+    front_pad = ""
     if np.iscomplex(num):
+        if shift_for_minus:
+            if num.real > 0.0:
+                front_pad = " "
         if num.imag < 0.0:
-            num_str = (f"{{{format}}}{pad}-{pad}{{{format}}}j").format(num.real, abs(num.imag))
+            num_str = (f"{front_pad}{{{format}}}{pad}-{pad}{{{format}}}j").format(num.real, abs(num.imag))
         else:
-            num_str = (f"{{{format}}}{pad}+{pad}{{{format}}}j").format(num.real, num.imag)
+            num_str = (f"{front_pad}{{{format}}}{pad}+{pad}{{{format}}}j").format(num.real, num.imag)
     else:
-        num_str = (f"{{{format}}}").format(num)
+        if shift_for_minus:
+            if num > 0.0:
+                front_pad = " "
+        num_str = (f"{front_pad}{{{format}}}").format(num.real)
     return num_str
