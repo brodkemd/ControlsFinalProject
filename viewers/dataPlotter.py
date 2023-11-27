@@ -109,10 +109,10 @@ class DataPlotter:
 
 
         for i in range(len(self.vars)):
-            self.vars[i] = re.sub("\s+", "_", self.vars[i])
+            self.vars[i] = re.sub(r"\s+", "_", self.vars[i])
 
         for i in range(len(self.inputs)):
-            self.inputs[i] = re.sub("\s+", "_", self.inputs[i])
+            self.inputs[i] = re.sub(r"\s+", "_", self.inputs[i])
 
         self.t = []
         lengths = self.vars_lengths+self.inputs_lengths

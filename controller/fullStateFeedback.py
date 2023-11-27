@@ -134,7 +134,7 @@ class FullStateFeedBack(Base):
 
         tau = tau_cp_port_canard + tau_cp_port_fin + tau_cp_starboard_canard + tau_cp_starboard_fin
 
-        angles = np.array(self.toFinAngles.calc_def(tau, x))
+        angles = self.toFinAngles.calc_def(tau, x)
 
         return F_E, angles, self.x_r.copy()
 

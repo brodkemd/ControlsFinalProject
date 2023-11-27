@@ -10,7 +10,7 @@ from viewers.animation                  import Animation
 from viewers.dataPlotter                import DataPlotter
 from dynamics.dynamics                  import Dynamics
 from dynamics.forcesMoments             import ForcesMoments
-from controller.fullStateFeedback       import FullStateFeedBack
+from controller.LQR                     import LQR
 
 make_output        = 0
 show_figures       = 0
@@ -38,7 +38,8 @@ if not show_figures:
     mpl.use('Agg')
 
 state      = P.initial_state.copy()
-controller = FullStateFeedBack(compute_gains=True)
+#controller = FullStateFeedBack(compute_gains=True)
+controller = LQR(compute_gains=True)
 dynamics   = Dynamics(state)
 forces     = ForcesMoments()
 
