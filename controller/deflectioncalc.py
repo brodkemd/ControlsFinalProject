@@ -43,5 +43,5 @@ class deflection_calc:
             # delta_sf = np.abs(delta_pf + np.deg2rad(90))
             # delta_pf = np.abs(delta_pf + np.deg2rad(90))
         
-        return delta_pc,delta_sc,delta_pf,delta_sf
+        return np.array([delta_pc,delta_sc,delta_pf,delta_sf])
 
