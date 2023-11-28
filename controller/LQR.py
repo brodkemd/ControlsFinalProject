@@ -61,7 +61,7 @@ class LQR(Base):
 
             else:
                 phi_e = 0
-                theta_e = 0
+                theta_e = np.deg2rad(0)
                 psi_e = 0
                 self.x_r[6] = Euler2Quaternion(phi_e, theta_e, psi_e).item(0) # e_0
                 self.x_r[7] = Euler2Quaternion(phi_e, theta_e, psi_e).item(1) # e_1
@@ -141,13 +141,8 @@ class LQR(Base):
             elif np.abs(angles[i]) > np.abs(np.deg2rad(-180)):
                 angles[i] = np.deg2rad(-180)
 
-<<<<<<< HEAD
         # print(x[2])
         return F_E, angles,self.x_r.copy()
-=======
-        print(np.rad2deg(angles))
-        return F_E, angles, self.x_r.copy()
->>>>>>> ab5c3c4215cc1992f13a6bb58599c1920eb680e6
 
 
 class DescentCP(DescentStateSpaceCP, BaseFullStateFeedBack):

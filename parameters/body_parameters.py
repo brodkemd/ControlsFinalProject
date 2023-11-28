@@ -32,12 +32,13 @@ J = np.array([
 
 # use these euler angles to initial quaternion (easiest method)
 phi   = 0
-theta = np.deg2rad(0) # np.deg2rad(90)
+theta = np.deg2rad(2) # np.deg2rad(90)
 psi   = 0
 
 # defining the initial state
 initial_state = np.array([
-    -10, # p_n
+    # V = 182.45 m/s
+    0, # p_n
     0, # p_e
    -11000, # p_d
     0, # u

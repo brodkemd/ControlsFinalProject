@@ -53,6 +53,7 @@ class CPFromAerodynamics:
         Cm = self.Cmf[0] + self.Cmf[1]*M + self.Cmf[2]*AOA + self.Cmf[3]*M**2 + self.Cmf[4]*M*AOA + self.Cmf[5]*AOA**2 + self.Cmf[6]*(M**2)*AOA + self.Cmf[7]*M*(AOA**2) + self.Cmf[8]*AOA**3
         # Calculates the forces for the body and the control surfaces
         AOA = np.deg2rad(AOA)
+        AOA -= np.pi/2
         # body forces
         Fbx = (-Cd*np.cos(AOA) - Cl*np.sin(AOA))*(0.5*BODY.rhoAvg*(V**2)*BODY.Aref)*np.cos(B)
         Fby = (-Cd*np.cos(AOA) - Cl*np.sin(AOA))*(0.5*BODY.rhoAvg*(V**2)*BODY.Aref)*np.sin(B)
@@ -149,6 +150,7 @@ class CPFromAerodynamics:
         Mpf = np.cross(rpf,Fpf)
         Msf = np.cross(rsf,Fsf)
         M = Me + Mpc + Msc + Mpf + Msf #+ Mb
+        # M = M/(1E2*2)
         # print(M)
         return np.hstack((F, M))
 
