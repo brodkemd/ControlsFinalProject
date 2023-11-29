@@ -27,7 +27,8 @@ class deflection_calc:
         A_f = self.A_f
         rho = self.rho
         AOA -= np.deg2rad(90)
-        delta_sf = np.pi/12 - np.pi/2
+        # AOA = np.deg2rad(90)
+        # delta_sf = -np.pi/12 - np.pi/2
         Mx = M[0]
         My = M[1]
         Mz = M[2]
@@ -39,11 +40,10 @@ class deflection_calc:
         #     # delta_sc = np.abs(delta_pc + np.deg2rad(90))
             # delta_pc += np.deg2rad(90)
         # else:
-        delta_sc = (-280637035.076477*AOA*A_c*V**2*rho - 184536928.289368*AOA*A_f*V**2*delta_sf*rho - 289869929.114953*AOA*A_f*V**2*rho + 28846496.4443432*AOA*Fy + 57471936.9973222*A_c*V**2*rho + 37593554.3299169*A_f*V**2*delta_sf*rho + 58669361.3204233*A_f*V**2*rho - 5876560.0*Fy - 4351105.82522186*Mx + 27017.6968208722*My)/(178659085.388299*AOA*A_c*V**2*rho - 36396130.0068158*A_c*V**2*rho)
-        delta_pc = (-280637035.076477*AOA*A_c*V**2*rho + 184536928.289368*AOA*A_f*V**2*delta_sf*rho + 289869929.114953*AOA*A_f*V**2*rho + 2975480.94203123*AOA*Fy + 38570073.8047802*A_c*V**2*rho - 37593554.3299169*A_f*V**2*delta_sf*rho - 35419610.5319526*A_f*V**2*rho - 606160.0*Fy + 4351105.82522186*Mx - 1669442.33611762*My)/(178659085.388299*AOA*A_c*V**2*rho - 36396130.0068158*A_c*V**2*rho)
-        # delta_sf = 
-        delta_pf = (-68347.0104775438*AOA*A_f*V**2*delta_sf*rho - 214718.466011076*AOA*A_f*V**2*rho + 9581.85759344887*AOA*Fy + 7000.69007131188*A_c*V**2*rho + 13923.53864071*A_f*V**2*delta_sf*rho + 34847.7673527318*A_f*V**2*rho - 1952.0*Fy + 628.318530717959*My)/(68347.0104775438*AOA*A_f*V**2*rho - 13923.53864071*A_f*V**2*rho)
-        # delta_pc += np.deg2rad(90)
+        delta_sc = (-33331.7474313223*AOA*A_c*V**2*rho + 106028.752058656*AOA*Fy + 6790.28782794948*A_c*V**2*rho - 21600.0*Fy + 15707.963267949*Mx)/(21219.6494623421*AOA*A_c*V**2*rho - 4322.83149133956*A_c*V**2*rho)
+        delta_pc = (-33331.7474313223*AOA*A_c*V**2*rho - 106028.752058656*AOA*Fy + 6790.28782794948*A_c*V**2*rho + 21600.0*Fy - 15707.963267949*Mx)/(21219.6494623421*AOA*A_c*V**2*rho - 4322.83149133956*A_c*V**2*rho)
+        delta_sf = (-5166420.85185496*AOA*A_f*V**2*rho + 15910988.6931872*AOA*Fy + 301029.673066411*A_c*V**2*rho + 670038.881157631*A_f*V**2*rho - 3241360.0*Fy + 2434734.30653209*Mx + 27017.6968208722*My)/(3289045.66666303*AOA*A_f*V**2*rho - 670038.881157631*A_f*V**2*rho)
+        delta_pf = (-5166420.85185496*AOA*A_f*V**2*rho - 15910988.6931872*AOA*Fy + 301029.673066411*A_c*V**2*rho + 670038.881157631*A_f*V**2*rho + 3241360.0*Fy - 2434734.30653209*Mx + 27017.6968208722*My)/(3289045.66666303*AOA*A_f*V**2*rho - 670038.881157631*A_f*V**2*rho)
         # delta_sf = np.abs(delta_pf + np.deg2rad(90))
         # delta_pf = np.abs(delta_pf + np.deg2rad(90))
         

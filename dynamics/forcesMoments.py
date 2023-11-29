@@ -25,6 +25,7 @@ class CPFromAerodynamics:
         self.Cdf = np.array([0.03605, -0.01182, -0.0001243, 0.01985, -0.0001574, 7.297E-5, 0.001095, -8.369E-6, -6.47E-7])
         self.Clf = np.array([0.01872, -0.07913, -0.002173, 0.06861, 0.004314, 0.0001143, -0.002112, -2.849E-5, -1.013E-6])
         self.Cmf = np.array([-0.02598, 0.1033, 0.0002977, -0.08253, -0.003769, -0.0002425, -0.001543, 5.302E-5, 2.275E-6])
+        self.switch = 0
        
         pass
 
@@ -63,8 +64,26 @@ class CPFromAerodynamics:
         # Defines the surface coefficients from flat plate thy [delPortCanard, delStarCanard, delPortFin, delStarFin]
         # Cls = 2*np.pi*delSurf 
         # Cds = 1.28*np.sin(delSurf)
-        Cls = 2*np.pi*(np.pi/2 + delSurf)
-        Cds = 1.28*(1 + delSurf)
+        # Cls = 2*np.pi*(np.pi/2 + delSurf)
+        # Cds = 1.28*(1 + delSurf)
+        Cl1 = 2*np.pi*(np.pi/2 + delSurf[0])
+        # Cl1 = 1.28*np.sin(delta_pc)
+        Cd1 = 1.28*(1 + delSurf[0])
+
+        Cl2 = 2*np.pi*(np.pi/2 + delSurf[0])
+        # Cl2 = 1.28*np.sin(delta_sc)
+        Cd2 = 1.28*(1 + delSurf[0])
+
+        Cl3 = 2*np.pi*(np.pi/2 + delSurf[0])
+        # Cl3 = 1.28*np.sin(delta_pf)
+        Cd3 = 1.28*(1 + delSurf[0])
+
+        Cl4 = 2*np.pi*(np.pi/2 + delSurf[0])
+        # Cl4 = 1.28*np.sin(delta_sf)
+        Cd4 = 1.28*(1 + delSurf[0])
+
+        Cls = np.array([Cl1,Cl2,Cl3,Cl4])
+        Cds = np.array([Cd1,Cd2,Cd3,Cd4])
 
         rho = BODY.rhoAvg
         A_c = BODY.AsurfC
@@ -72,7 +91,7 @@ class CPFromAerodynamics:
 
         # Canard forces (portCanard (pc), starboardCanard (sc))
         Fpcx = (Cds[0]*AOA)*(0.5*rho*V**2*A_c)
-        Fpcy = Cls[0]*(0.5*rho*V**2*A_c)
+        Fpcy = -Cls[0]*(0.5*rho*V**2*A_c)
         Fpcz = (-Cds[0] + Cls[0]*AOA)*(0.5*rho*V**2*A_c)
 
         Fscx = (Cds[1]*AOA)*(0.5*rho*V**2*A_c)
@@ -81,7 +100,7 @@ class CPFromAerodynamics:
  
         # Fin forces (portFin (pf), starboardFin (sf))
         Fpfx = (Cds[2]*AOA)*(0.5*rho*V**2*A_f)
-        Fpfy = Cls[2]*(0.5*rho*V**2*A_f)
+        Fpfy = -Cls[2]*(0.5*rho*V**2*A_f)
         Fpfz = (-Cds[2] + Cls[2]*AOA)*(0.5*rho*V**2*A_f)
 
         Fsfx = (Cds[3]*AOA)*(0.5*rho*V**2*A_f)
@@ -115,7 +134,7 @@ class CPFromAerodynamics:
         Fsc = np.array([Fscx,Fscy,Fscz])
         Fpf = np.array([Fpfx,Fpfy,Fpfz])
         Fsf = np.array([Fsfx,Fsfy,Fsfz])
-        Fb = np.array([Fbx, Fby, Fbz])
+        Fb = np.array([Fbx, Fby, -Fbz])
         # Fe = np.array([FEx, FEy, FEz])
         self.r_E = BODY.r_E
         self.m   = BODY.mass
@@ -139,19 +158,34 @@ class CPFromAerodynamics:
         COPrad = (PortCanard + StarCanard + PortFin + StarFin)/normSqr
 
         # Calculates the total forces and moments
-        # Forces (just body acting at COM)
-        F = Fb + F_E + F_g + Fpc + Fsc + Fpf + Fsf
+        
         # Body moment using the Cm eqn (moments only in y-dir)
         Mb = np.array([0, Cm*(0.5*BODY.rhoAvg*(V**2)*BODY.Aref), 0])
         # Moments (surface + engine torques)
         Me = np.cross(re,F_E)
+        # Me[1] = -Me[1]
         Mpc = np.cross(rpc,Fpc)
         Msc = np.cross(rsc,Fsc)
         Mpf = np.cross(rpf,Fpf)
         Msf = np.cross(rsf,Fsf)
-        M = Me + Mpc + Msc + Mpf + Msf #+ Mb
+        My = V**2*rho*(7.625*A_c*(-np.pi*AOA*(2*delSurf[0] + np.pi) + 1.28*delSurf[0] + 1.28) + 7.625*A_c*(-np.pi*AOA*(2*delSurf[1] + np.pi) + 1.28*delSurf[1] + 1.28) - 9.6875*A_f*(-np.pi*AOA*(2*delSurf[2] + np.pi) + 1.28*delSurf[2] + 1.28) - 9.6875*A_f*(-np.pi*AOA*(2*delSurf[3] + np.pi) + 1.28*delSurf[3] + 1.28))
+        if np.abs(Me[1]) > 1.0:
+            self.switch = 1.0
+            M = Me 
+            F = F_E + F_g
+        elif self.switch == 1.0:
+            F = F_E + F_g
+            M = Me
+        else:
+            M = Me + np.array([0,My,0]) #+ Mb
+            # Forces (just body acting at COM)
+            F = Fb + F_E + F_g# + Fpc + Fsc + Fpf + Fsf
+        
         # M = M/(1E2*2)
         # print(M)
+        # M[1] = My
+        # F[2] = -F[2]
+        # M[1] = -M[1]
         return np.hstack((F, M))
 
 

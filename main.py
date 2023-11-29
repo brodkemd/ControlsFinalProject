@@ -14,8 +14,8 @@ from dynamics.forcesMoments             import ForcesMoments
 from controller.LQR                     import LQR
 
 make_output        = 0
-show_figures       = 1
-include_animation  = 1
+show_figures       = 0
+include_animation  = 0
 include_plotter    = 0
 write_data_to_file = 1
 
@@ -40,7 +40,7 @@ if not show_figures:
 
 state      = P.initial_state.copy()
 #controller = FullStateFeedBack(compute_gains=True)
-controller = LQR(compute_gains=False)
+controller = LQR(compute_gains=True)
 dynamics   = Dynamics(state)
 forces     = ForcesMoments()
 

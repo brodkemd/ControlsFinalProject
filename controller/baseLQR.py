@@ -23,7 +23,7 @@ class BaseFullStateFeedBack:
         print(2*" "+self.name+":")
 
     def generateGains(self, compute_gains=True, add_integrator=False):
-        add_integrator = False
+        # add_integrator = False
         if compute_gains:
             if add_integrator:
                 print("ERROR: INTEGRATOR IS NOT YET IMPLEMENTED FOR LQR!")

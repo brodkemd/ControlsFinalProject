@@ -1,12 +1,12 @@
 from tools.rotations import Euler2Quaternion
 import numpy as np
 
-mass = 100.0
+mass = 1283.96
 # gravity = 9.81
 Aref = 1413.72 #Starship reference area, m^2
 AsurfC = 15.81 #Canard ref area, m^2
 AsurfF = 45.39 #Fin ref area, m^2
-maxThrust = 9578.342 #N
+maxThrust = 9578.342*2 #N
 
 # Atmospheric Parameters
 rhoAvg = 0.016164897 #kg/m^3
@@ -32,7 +32,7 @@ J = np.array([
 
 # use these euler angles to initial quaternion (easiest method)
 phi   = 0
-theta = np.deg2rad(2) # np.deg2rad(90)
+theta = np.deg2rad(0) # np.deg2rad(90)
 psi   = 0
 
 # defining the initial state
@@ -40,7 +40,7 @@ initial_state = np.array([
     # V = 182.45 m/s
     0, # p_n
     0, # p_e
-   -11000, # p_d
+   -10000, # p_d
     0, # u
     0, # v
     182.45, # w, M=0.8 for entry

@@ -85,9 +85,10 @@ class LQR(Base):
         
         elif self.state == 0:
             if x.item(2) > -250 and self.check == 0 and np.abs(x.item(3)) < 5:
-                    self.x_r[0] = -x.item(0)
+                    self.x_r[0] = x.item(0)
                     self.x_r[1] = x.item(1)
                     self.check = 1
+                    print('landing sequence')
     
         if self.state != last_state:
             print("\nChanged state from", last_state, "to", self.state, end="\n\n")
@@ -133,13 +134,15 @@ class LQR(Base):
         tau_cp_starboard_fin    = np.cross(   self.r_cp_starboard_fin,    F_cp_starboard_fin)
 
         tau = tau_cp_port_canard + tau_cp_port_fin + tau_cp_starboard_canard + tau_cp_starboard_fin
-        print(tau)
+        # print(tau)
         angles = self.toFinAngles.calc_def(tau, x)
+        
         for i in range(0,len(angles)):
-            if np.abs(angles[i]) < 0:
-                angles[i] = 0
-            elif np.abs(angles[i]) > np.abs(np.deg2rad(-180)):
-                angles[i] = np.deg2rad(-180)
+            if angles[i] < -np.pi:
+                angles[i] = -np.pi
+            elif angles[i] > -np.pi/2:
+                angles[i] = -np.pi/2
+        # print(np.rad2deg(angles))
 
         # print(x[2])
         return F_E, angles,self.x_r.copy()
@@ -150,9 +153,11 @@ class DescentCP(DescentStateSpaceCP, BaseFullStateFeedBack):
         BaseFullStateFeedBack.__init__(self, "descentCP")
         DescentStateSpaceCP.__init__(self)
 
-        self.Q_diagonal = 1/(1**2)*np.ones(self.A.shape[0])
+        # self.Q_diagonal = 1/(1**2)*np.ones(self.A.shape[0])
+        self.Q_diagonal = np.array([1E-6,1E-6,1E-6,1E-6,1,1E5,1,1,1,1])
         #self.Q_diagonal[0]*=1
-        self.R_diagonal = 1*np.ones(self.B.shape[1])
+        self.R_diagonal = 1E-6*np.ones(self.B.shape[1])
+        # self.R_diagonal = np.array([1E5,1E5,1E5,1E-5,1E-5,1E-5,1,1])
 
         self.computeQR()
         self.generateGains(compute_gains=compute_gains, add_integrator=add_integrator)
@@ -174,7 +179,8 @@ class Landing(LandingStateSpace, BaseFullStateFeedBack):
         BaseFullStateFeedBack.__init__(self, "landing")
         LandingStateSpace.__init__(self)
 
-        self.Q_diagonal = 1/(0.1**2)*np.ones(self.A.shape[0])
-        self.R_diagonal = (0.1)*np.ones(self.B.shape[1])
+        # self.Q_diagonal = 1E12/(0.1**2)*np.ones(self.A.shape[0])
+        self.Q_diagonal = np.array([1E3,1E-2,1E3,1E-8,1E-8,1E-8,1E11,1,1,1])
+        self.R_diagonal = 5E1*np.ones(self.B.shape[1])
         self.computeQR()
         self.generateGains(compute_gains=compute_gains, add_integrator=add_integrator)
