@@ -12,19 +12,21 @@ import os
 class LQR(Base):
     global_u_to_total_u = None
 
-    def __init__(self, compute_gains=False) -> None:
+    def __init__(self, compute_gains=False, rigid_body=False) -> None:
         super().__init__()
+        self.rigid_body = rigid_body
+
         print("\nLQR:")
-        self.landing    = Landing(compute_gains=compute_gains)
-        self.descentCP   = DescentCP(compute_gains=compute_gains)
-        self.flipCP      = FlipCP(compute_gains=compute_gains)
+        self.landing     = Landing(  compute_gains=True, add_integrator=False)
+        self.descentCP   = DescentCP(compute_gains=False,          add_integrator=False)
+        self.flipCP      = FlipCP(   compute_gains=compute_gains, add_integrator=False)
         self.toFinAngles = deflection_calc()
         print("  Loading Transforms: ", end="")
         cwd = os.path.dirname(__file__)
         LoadModule(os.path.join(cwd, "total.h"), self)
         print("done")
 
-        self.state = 2 # 0 = landing, 1 = flip, 2 = descent
+        self.state = 0 # 0 = landing, 1 = flip, 2 = descent
 
         phi_e = 0
         theta_e = 0
@@ -68,20 +70,20 @@ class LQR(Base):
                 self.x_r[8] = Euler2Quaternion(phi_e, theta_e, psi_e).item(2) # e_2
                 self.x_r[9] = Euler2Quaternion(phi_e, theta_e, psi_e).item(3) # e_3
         
-        elif self.state == 1:
-            phi_e = 0
-            theta_e = 90
-            psi_e = 0
+        # elif self.state == 1:
+        #     phi_e = 0
+        #     theta_e = 90
+        #     psi_e = 0
 
-            e = x[6:10]
-            theta = np.rad2deg(Quaternion2Euler(e)[1])
-            if abs(theta_e - theta) < 10:
-                theta_e = np.deg2rad(theta_e)
-                self.state = 0
-                self.x_r[6] = Euler2Quaternion(phi_e, theta_e, psi_e).item(0) # e_0
-                self.x_r[7] = Euler2Quaternion(phi_e, theta_e, psi_e).item(1) # e_1
-                self.x_r[8] = Euler2Quaternion(phi_e, theta_e, psi_e).item(2) # e_2
-                self.x_r[9] = Euler2Quaternion(phi_e, theta_e, psi_e).item(3) # e_3
+        #     e = x[6:10]
+        #     theta = np.rad2deg(Quaternion2Euler(e)[1])
+        #     if abs(theta_e - theta) < 10:
+        #         theta_e = np.deg2rad(theta_e)
+        #         self.state = 0
+        #         self.x_r[6] = Euler2Quaternion(phi_e, theta_e, psi_e).item(0) # e_0
+        #         self.x_r[7] = Euler2Quaternion(phi_e, theta_e, psi_e).item(1) # e_1
+        #         self.x_r[8] = Euler2Quaternion(phi_e, theta_e, psi_e).item(2) # e_2
+        #         self.x_r[9] = Euler2Quaternion(phi_e, theta_e, psi_e).item(3) # e_3
         
         elif self.state == 0:
             if x.item(2) > -250 and self.check == 0 and np.abs(x.item(3)) < 5:
@@ -147,6 +149,19 @@ class LQR(Base):
         # print(x[2])
         return F_E, angles,self.x_r.copy()
 
+        # if self.rigid_body:
+        #     return F_E, F_cp, tau, self.x_r.copy()
+        # else:
+        #     angles = self.toFinAngles.calc_def(tau, x)
+        #     for i in range(0,len(angles)):
+        #         if np.abs(angles[i]) < 0:
+        #             angles[i] = 0
+        #         elif np.abs(angles[i]) > np.abs(np.deg2rad(-180)):
+        #             angles[i] = np.deg2rad(-180)
+
+        #     print(np.rad2deg(angles))
+        #     return F_E, angles, self.x_r.copy()
+
 
 class DescentCP(DescentStateSpaceCP, BaseFullStateFeedBack):
     def __init__(self, compute_gains=False, add_integrator=False) -> None:
@@ -159,8 +174,30 @@ class DescentCP(DescentStateSpaceCP, BaseFullStateFeedBack):
         self.R_diagonal = 1E-6*np.ones(self.B.shape[1])
         # self.R_diagonal = np.array([1E5,1E5,1E5,1E-5,1E-5,1E-5,1,1])
 
-        self.computeQR()
         self.generateGains(compute_gains=compute_gains, add_integrator=add_integrator)
+
+    # def update(self, _x, _x_r):
+    #     # x_vars = p_n,p_e,u,v,e_1,e_2,e_3,p,q,r # order matters
+    #     error   = self.global_x_r_to_local_x_r @ (_x -     _x_r)
+    #     x_tilde = self.global_x_to_local_x     @ (_x - self.x_e)
+    #     # if abs(x_tilde.item(0)) > 1 and abs(x_tilde.item(1)) < 1:
+    #     #     self.x_e[6] = Euler2Quaternion(0, 0, np.deg2rad(90)).item(0)
+    #     #     self.x_e[7] = Euler2Quaternion(0, 0, np.deg2rad(90)).item(1)
+    #     #     self.x_e[8] = Euler2Quaternion(0, 0, np.deg2rad(90)).item(2)
+    #     #     self.x_e[9] = Euler2Quaternion(0, 0, np.deg2rad(90)).item(3)
+    #     # else:
+    #     #     self.x_e[6] = Euler2Quaternion(0, 0,  np.deg2rad(0)).item(0)
+    #     #     self.x_e[7] = Euler2Quaternion(0, 0,  np.deg2rad(0)).item(1)
+    #     #     self.x_e[8] = Euler2Quaternion(0, 0,  np.deg2rad(0)).item(2)
+    #     #     self.x_e[9] = Euler2Quaternion(0, 0,  np.deg2rad(0)).item(3)
+
+    #     if self.has_integrator:
+    #         self.integrateError(error)
+    #         x_tilde_with_integral = np.hstack((x_tilde, self.integrator))
+    #         u = self.local_u_to_global_u @ (-1*self.K @ x_tilde_with_integral)
+    #     else:
+    #         u = self.local_u_to_global_u @ (-1*self.K @ x_tilde)
+    #     return self.u_e + u
 
 
 class FlipCP(FlipStateSpaceCP, BaseFullStateFeedBack):
@@ -168,9 +205,13 @@ class FlipCP(FlipStateSpaceCP, BaseFullStateFeedBack):
         BaseFullStateFeedBack.__init__(self, "flipCP")
         FlipStateSpaceCP.__init__(self)
 
-        self.Q_diagonal = np.ones(self.A.shape[0])
-        self.R_diagonal = np.ones(self.B.shape[1])
-        self.computeQR()
+        if add_integrator:
+            self.Q_diagonal = np.ones(self.A.shape[0] + self.C.shape[0])
+            self.R_diagonal = np.ones(self.B.shape[0] + self.C.shape[0])
+        else:
+            self.Q_diagonal = np.ones(self.A.shape[0])
+            self.R_diagonal = np.ones(self.B.shape[0])
+
         self.generateGains(compute_gains=compute_gains, add_integrator=add_integrator)
 
 
@@ -183,4 +224,13 @@ class Landing(LandingStateSpace, BaseFullStateFeedBack):
         self.Q_diagonal = np.array([1E3,1E-2,1E3,1E-8,1E-8,1E-8,1E11,1,1,1])
         self.R_diagonal = 5E1*np.ones(self.B.shape[1])
         self.computeQR()
+        if add_integrator:
+            self.Q_diagonal = np.ones(self.A.shape[0] + self.C.shape[0])
+            self.R_diagonal = np.ones(self.B.shape[0] + self.C.shape[0])
+        else:
+            # print("     No integrator")
+            self.Q_diagonal = 1/(0.001**2)*np.ones(self.A.shape[0])
+            self.R_diagonal = np.ones(self.B.shape[0])
+
+
         self.generateGains(compute_gains=compute_gains, add_integrator=add_integrator)
