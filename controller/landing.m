@@ -32,5 +32,5 @@ R = [50.0000000000000000,0.0000000000000000,0.0000000000000000;
      0.0000000000000000,50.0000000000000000,0.0000000000000000;
      0.0000000000000000,0.0000000000000000,50.0000000000000000];
 K = lqr(A, B, Q, R)
-save('c:\Users\Delli\Documents\GitHub\ControlsFinalProject\controller\landing.mat', 'K');
+save('/home/marekbrodke/Dropbox/School/Flight_Mechanics/ControlsFinalProject/controller/landing.mat', 'K');
 exit;

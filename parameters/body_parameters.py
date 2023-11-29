@@ -32,7 +32,7 @@ J = np.array([
 
 # use these euler angles to initial quaternion (easiest method)
 phi   = 0
-theta = np.deg2rad(0) # np.deg2rad(90)
+theta = np.deg2rad(90) # np.deg2rad(90)
 psi   = 0
 
 # defining the initial state
@@ -70,11 +70,11 @@ r_cp_starboard_fin_x    = -1
 r_cp_starboard_fin_y    =  1
 r_cp_starboard_fin_z    =  0
 
-r_cp_port_canard = np.array([r_cp_port_canard_x,r_cp_port_canard_y,r_cp_port_canard_z])
+r_cp_port_canard      = np.array([r_cp_port_canard_x,r_cp_port_canard_y,r_cp_port_canard_z])
 r_cp_starboard_canard = np.array([r_cp_starboard_canard_x,r_cp_starboard_canard_y,r_cp_starboard_canard_z])
 
-r_cp_port_fin = np.array([r_cp_port_fin_x,r_cp_port_fin_y,r_cp_port_fin_z])
-r_cp_starboard_fin = np.array([r_cp_starboard_fin_x,r_cp_starboard_fin_y,r_cp_starboard_fin_z])
+r_cp_port_fin         = np.array([r_cp_port_fin_x,r_cp_port_fin_y,r_cp_port_fin_z])
+r_cp_starboard_fin    = np.array([r_cp_starboard_fin_x,r_cp_starboard_fin_y,r_cp_starboard_fin_z])
 
-r_E = np.array([r_E_x, r_E_y, r_E_z], dtype=float)
+r_E                   = np.array([r_E_x, r_E_y, r_E_z], dtype=float)
 

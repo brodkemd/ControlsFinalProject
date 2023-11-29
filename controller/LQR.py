@@ -12,8 +12,10 @@ import os
 class LQR(Base):
     global_u_to_total_u = None
 
-    def __init__(self, compute_gains=False) -> None:
+    def __init__(self, compute_gains=False, rigid_body=False) -> None:
         super().__init__()
+        self.rigid_body = rigid_body
+
         print("\nLQR:")
         self.landing    = Landing(compute_gains=compute_gains,add_integrator=False)
         self.descentCP   = DescentCP(compute_gains=compute_gains,add_integrator=True)
@@ -24,7 +26,7 @@ class LQR(Base):
         LoadModule(os.path.join(cwd, "total.h"), self)
         print("done")
 
-        self.state = 2 # 0 = landing, 1 = flip, 2 = descent
+        self.state = 0 # 0 = landing, 1 = flip, 2 = descent
 
         phi_e = 0
         theta_e = 0
@@ -135,17 +137,20 @@ class LQR(Base):
 
         tau = tau_cp_port_canard + tau_cp_port_fin + tau_cp_starboard_canard + tau_cp_starboard_fin
         # print(tau)
-        angles = self.toFinAngles.calc_def(tau, x)
-        
-        for i in range(0,len(angles)):
-            if angles[i] < -np.pi:
-                angles[i] = -np.pi
-            elif angles[i] > -np.pi/2:
-                angles[i] = -np.pi/2
-        # print(np.rad2deg(angles))
 
-        # print(x[2])
-        return F_E, angles,self.x_r.copy()
+        if self.rigid_body:
+            return F_E, F_cp, tau, self.x_r.copy()
+        else:
+            angles = self.toFinAngles.calc_def(tau, x)
+            for i in range(0,len(angles)):
+                if angles[i] < -np.pi:
+                    angles[i] = -np.pi
+                elif angles[i] > -np.pi/2:
+                    angles[i] = -np.pi/2
+            # print(np.rad2deg(angles))
+
+            # print(x[2])
+            return F_E, angles, self.x_r.copy()
 
 
 class DescentCP(DescentStateSpaceCP, BaseFullStateFeedBack):
@@ -153,13 +158,14 @@ class DescentCP(DescentStateSpaceCP, BaseFullStateFeedBack):
         BaseFullStateFeedBack.__init__(self, "descentCP")
         DescentStateSpaceCP.__init__(self)
 
-        # self.Q_diagonal = 1/(1**2)*np.ones(self.A.shape[0])
         self.Q_diagonal = np.array([1E-6,1E-6,1E-6,1E-6,1,1E5,1,1,1,1])
-        #self.Q_diagonal[0]*=1
         self.R_diagonal = 1E-6*np.ones(self.B.shape[1])
+
+        if add_integrator:
+            self.Q_diagonal = np.hstack((self.Q_diagonal, np.ones(self.C.shape[0])))
+            self.R_diagonal = np.hstack((self.R_diagonal, np.ones(self.C.shape[0])))
         # self.R_diagonal = np.array([1E5,1E5,1E5,1E-5,1E-5,1E-5,1,1])
 
-        self.computeQR()
         self.generateGains(compute_gains=compute_gains, add_integrator=add_integrator)
 
 
@@ -169,8 +175,12 @@ class FlipCP(FlipStateSpaceCP, BaseFullStateFeedBack):
         FlipStateSpaceCP.__init__(self)
 
         self.Q_diagonal = np.ones(self.A.shape[0])
-        self.R_diagonal = np.ones(self.B.shape[1])
-        self.computeQR()
+        self.R_diagonal = np.ones(self.B.shape[0])
+        if add_integrator:
+            self.Q_diagonal = np.hstack((self.Q_diagonal, np.ones(self.C.shape[0])))
+            self.R_diagonal = np.hstack((self.R_diagonal, np.ones(self.C.shape[0])))
+            
+
         self.generateGains(compute_gains=compute_gains, add_integrator=add_integrator)
 
 
@@ -181,6 +191,11 @@ class Landing(LandingStateSpace, BaseFullStateFeedBack):
 
         # self.Q_diagonal = 1E12/(0.1**2)*np.ones(self.A.shape[0])
         self.Q_diagonal = np.array([1E3,1E-2,1E3,1E-8,1E-8,1E-8,1E11,1,1,1])
-        self.R_diagonal = 5E1*np.ones(self.B.shape[1])
-        self.computeQR()
+        self.R_diagonal = 5E1*np.ones(self.B.shape[0])
+        
+        if add_integrator:
+            self.Q_diagonal = np.hstack((self.Q_diagonal, np.ones(self.C.shape[0])))
+            self.R_diagonal = np.hstack((self.R_diagonal, np.ones(self.C.shape[0])))
+
+
         self.generateGains(compute_gains=compute_gains, add_integrator=add_integrator)

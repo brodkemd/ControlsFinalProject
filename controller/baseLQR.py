@@ -23,11 +23,10 @@ class BaseFullStateFeedBack:
         print(2*" "+self.name+":")
 
     def generateGains(self, compute_gains=True, add_integrator=False):
-        # add_integrator = False
         if compute_gains:
             if add_integrator:
-                print("ERROR: INTEGRATOR IS NOT YET IMPLEMENTED FOR LQR!")
-                exit()
+                # print("ERROR: INTEGRATOR IS NOT YET IMPLEMENTED FOR LQR!")
+                # exit()
                 print("    Generating Integrator State Space")
                 A = np.vstack([
                     np.hstack([ self.A, np.zeros((self.A.shape[0], self.C.shape[0]))]),
@@ -57,12 +56,13 @@ class BaseFullStateFeedBack:
                     raise ValueError(f"State space is not controllable\n  Controlability rank: {CC_rank}\n  # A rows: {self.A.shape[0]}")
                 print("        done")
 
+            Q, R = self.computeQR(A, B)
             # if len(self.poles) != len(A): raise ValueError("number of poles must be the same as the number of rows of A, # rows of A: " + str(len(A)) + "  # poles provided: " + str(len(self.poles)))
             print("    Generating Matlab File: ", end="")
-            A_str    = arrToStr(     A, joins=[";\n     "],     starts=["[", ""], ends=["]", ""])
-            B_str    = arrToStr(     B, joins=[";\n     "],     starts=["[", ""], ends=["]", ""])
-            Q_str    = arrToStr(self.Q, joins=[";\n     "],     starts=["[", ""], ends=["]", ""])
-            R_str    = arrToStr(self.R, joins=[";\n     "],     starts=["[", ""], ends=["]", ""])
+            A_str    = arrToStr(A, joins=[";\n     "], starts=["[", ""], ends=["]", ""])
+            B_str    = arrToStr(B, joins=[";\n     "], starts=["[", ""], ends=["]", ""])
+            Q_str    = arrToStr(Q, joins=[";\n     "], starts=["[", ""], ends=["]", ""])
+            R_str    = arrToStr(R, joins=[";\n     "], starts=["[", ""], ends=["]", ""])
             
             with open(self.file_stem+".m", 'w') as f:
                 f.write(f"A = {A_str};\n")
@@ -101,48 +101,55 @@ class BaseFullStateFeedBack:
         print(f"    Loading gain matrix:", end=" ")
         mat_data = scipy.io.loadmat(f"{self.file_stem}.mat")
         print("Done")
-        K    = mat_data["K"]
+        self.K    = mat_data["K"]
         #prec = mat_data["prec"].item(0)
         #print(f"       Gains have a decimal precision of: {prec}")
 
 
         if add_integrator:
-            print("    Separating Integrator and PD gains")
-            self.K = K[:,:len(self.A)]
-            self.k_I = K[:,len(self.A):]
+        #     print("    Separating Integrator and PD gains")
+        #     self.K = K[:,:len(self.A)]
+        #     self.k_I = K[:,len(self.A):]
             self.integrator = np.zeros(self.C.shape[0])
-            self.error_d1 = np.zeros(self.C.shape[0])
-        else:
-            self.K = K
+            self.error_d1   = np.zeros(self.C.shape[0])
+        # else:
+        #     self.K = K
         self.has_integrator = add_integrator
 
     
-    def computeQR(self):
-        if len(self.Q_diagonal) != self.A.shape[0]:
-            raise ValueError(f"len(Q_diagonal) != # A rows\n  len(Q_diagonal) = {len(self.Q_diagonal)}\n  # A rows = {self.A.shape[0]}")
+    def computeQR(self, A, B):
+        if len(self.Q_diagonal) != A.shape[0]:
+            raise ValueError(f"len(Q_diagonal) != # A rows\n  len(Q_diagonal) = {len(self.Q_diagonal)}\n  # A rows = {A.shape[0]}")
         
-        if len(self.R_diagonal) != self.B.shape[1]:
-            raise ValueError(f"len(R_diagonal) != # B columns\n  len(R_diagonal) = {len(self.R_diagonal)}\n  # B columns = {self.A.shape[0]}")
+        if len(self.R_diagonal) != B.shape[0]:
+            raise ValueError(f"len(R_diagonal) != # B columns\n  len(R_diagonal) = {len(self.R_diagonal)}\n  # B columns = {B.shape[0]}")
 
-        self.Q = np.eye(self.A.shape[0])
-        self.R = np.eye(self.B.shape[1])
+        Q = np.eye(A.shape[0])
+        R = np.eye(B.shape[1])
 
-        for i in range(self.A.shape[0]):
-            self.Q[i,i] = self.Q_diagonal.item(i)
+        for i in range(A.shape[0]):
+            Q[i,i] = self.Q_diagonal.item(i)
         
-        for i in range(self.B.shape[1]):
-            self.R[i,i] = self.R_diagonal.item(i)
+        for i in range(B.shape[1]):
+            R[i,i] = self.R_diagonal.item(i)
+
+        return Q, R
+
 
     def update(self, _x, _x_r):
         # x_vars = "p_n,p_e,p_d,u,v,w,e_0,e_3,q,r".split(",") # order matters
+<<<<<<< HEAD
         error   = self.global_x_r_to_local_x_r @ (_x -     _x_r)
         x_tilde = self.global_x_to_local_x     @ (_x - _x_r)
+=======
+        error   = self.global_x_r_to_local_x_r @ (_x        -     _x_r)
+        x_tilde = self.global_x_to_local_x     @ ((_x-_x_r) - self.x_e)
+>>>>>>> eee90ac829101c5c863408c9a6d4cc66307b94c5
 
         if self.has_integrator:
-            print("should not be here")
-            exit()
             self.integrateError(error)
-            u = self.local_u_to_global_u @ (-1*self.K @ x_tilde - self.k_I @ self.integrator)
+            x_tilde_with_integral = np.hstack((x_tilde, self.integrator))
+            u = self.local_u_to_global_u @ (-1*self.K @ x_tilde_with_integral)
         else:
             u = self.local_u_to_global_u @ (-1*self.K @ x_tilde)
         return self.u_e + u
