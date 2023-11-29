@@ -32,7 +32,7 @@ J = np.array([
 
 # use these euler angles to initial quaternion (easiest method)
 phi   = 0
-theta = np.deg2rad(90) # np.deg2rad(90)
+theta = np.deg2rad(-15) # np.deg2rad(90)
 psi   = 0
 
 # defining the initial state
@@ -41,7 +41,7 @@ initial_state = np.array([
     0, # p_n
     0, # p_e
    -10000, # p_d
-    0, # u
+    5, # u
     0, # v
     182.45, # w, M=0.8 for entry
     Euler2Quaternion(phi, theta, psi).item(0), # e_0

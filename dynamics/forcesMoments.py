@@ -106,11 +106,17 @@ class CPFromAerodynamics:
         Fsfx = (Cds[3]*AOA)*(0.5*rho*V**2*A_f)
         Fsfy = Cls[3]*(0.5*rho*V**2*A_f)
         Fsfz = (-Cds[3] + Cls[3]*AOA)*(0.5*rho*V**2*A_f)
+
+        # if AOA < 0.0:
+        #     Fpcx = -Fpcx
+        #     Fscx = -Fscx
+        #     Fpfx = -Fpfx
+        #     Fsfx = -Fsfx
         
         # Total forces
         Fsx = Fpcx + Fscx + Fpfx + Fsfx
         Fsy = Fpcy + Fscy + Fpfy + Fsfy
-        Fsz = Fpcz + Fscz + Fpfz + Fsfz
+        Fsz = Fpcz + Fscz + Fpfz + Fsfz          
 
         #Engine forces
         # FEx = BODY.maxThrust*delT[0]
@@ -179,7 +185,7 @@ class CPFromAerodynamics:
         else:
             M = Me + np.array([0,My,0]) #+ Mb
             # Forces (just body acting at COM)
-            F = Fb + F_E + F_g# + Fpc + Fsc + Fpf + Fsf
+            F = Fb + F_E + F_g + Fpc + Fsc + Fpf + Fsf
         
         # M = M/(1E2*2)
         # print(M)

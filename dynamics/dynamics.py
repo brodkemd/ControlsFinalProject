@@ -4,12 +4,13 @@ import parameters.simulation_parameters as SIM
 import parameters.body_parameters as BODY
 
 class Dynamics:
-    def __init__(self, initial_condition:np.ndarray):
+    def __init__(self, initial_condition:np.ndarray,animation):
         # Initial state conditions, see state format
         self.state = initial_condition
         self.Ts    = SIM.ts_simulation # sample rate of system
         self.limit = 1.0 # input saturation limit
         self.m     = BODY.mass
+        self.centroid = animation.centroid[0]
         self.J     = BODY.J
         self.J_inv = np.linalg.inv(self.J)
         self.max_ground_incident_velocity = BODY.max_ground_incident_velocity
@@ -72,7 +73,7 @@ class Dynamics:
         return False
     
     def landingDetect(self):
-        # if self.state.item(2) >= 0: return True
+        if self.state.item(2)-self.centroid >= 0: return True
         return False
 
     def h(self, u):

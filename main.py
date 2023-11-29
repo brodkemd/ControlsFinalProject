@@ -41,7 +41,7 @@ if not show_figures:
 state      = P.initial_state.copy()
 #controller = FullStateFeedBack(compute_gains=True)
 controller = LQR(compute_gains=True)
-dynamics   = Dynamics(state)
+dynamics   = Dynamics(state,animation)
 forces     = ForcesMoments()
 
 try:
@@ -54,7 +54,7 @@ try:
 
         # loop that runs the dynamics
         while t < t_next_plot:
-            F_E, angles, x_r    = controller.update(state)            
+            F_E, angles, x_r    = controller.update(state)
             u                   = forces.update(state, F_E, angles)
             y, crash, landed    = dynamics.update(u)
             t += SIM.ts_simulation

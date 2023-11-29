@@ -121,7 +121,7 @@ class BaseFullStateFeedBack:
         if len(self.Q_diagonal) != A.shape[0]:
             raise ValueError(f"len(Q_diagonal) != # A rows\n  len(Q_diagonal) = {len(self.Q_diagonal)}\n  # A rows = {A.shape[0]}")
         
-        if len(self.R_diagonal) != B.shape[0]:
+        if len(self.R_diagonal) != B.shape[1]:
             raise ValueError(f"len(R_diagonal) != # B columns\n  len(R_diagonal) = {len(self.R_diagonal)}\n  # B columns = {B.shape[0]}")
 
         Q = np.eye(A.shape[0])
