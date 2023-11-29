@@ -136,7 +136,7 @@ class BaseFullStateFeedBack:
     def update(self, _x, _x_r):
         # x_vars = "p_n,p_e,p_d,u,v,w,e_0,e_3,q,r".split(",") # order matters
         error   = self.global_x_r_to_local_x_r @ (_x -     _x_r)
-        x_tilde = self.global_x_to_local_x     @ (_x - self.x_e)
+        x_tilde = self.global_x_to_local_x     @ (_x - _x_r)
 
         if self.has_integrator:
             print("should not be here")

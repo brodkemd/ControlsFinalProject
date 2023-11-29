@@ -15,8 +15,8 @@ class LQR(Base):
     def __init__(self, compute_gains=False) -> None:
         super().__init__()
         print("\nLQR:")
-        self.landing    = Landing(compute_gains=compute_gains)
-        self.descentCP   = DescentCP(compute_gains=compute_gains)
+        self.landing    = Landing(compute_gains=compute_gains,add_integrator=False)
+        self.descentCP   = DescentCP(compute_gains=compute_gains,add_integrator=True)
         self.flipCP      = FlipCP(compute_gains=compute_gains)
         self.toFinAngles = deflection_calc()
         print("  Loading Transforms: ", end="")

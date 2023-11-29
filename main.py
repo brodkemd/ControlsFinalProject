@@ -14,8 +14,8 @@ from dynamics.forcesMoments             import ForcesMoments
 from controller.LQR                     import LQR
 
 make_output        = 0
-show_figures       = 0
-include_animation  = 0
+show_figures       = 1
+include_animation  = 1
 include_plotter    = 0
 write_data_to_file = 1
 
