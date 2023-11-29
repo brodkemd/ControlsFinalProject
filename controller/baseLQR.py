@@ -138,13 +138,8 @@ class BaseFullStateFeedBack:
 
     def update(self, _x, _x_r):
         # x_vars = "p_n,p_e,p_d,u,v,w,e_0,e_3,q,r".split(",") # order matters
-<<<<<<< HEAD
         error   = self.global_x_r_to_local_x_r @ (_x -     _x_r)
         x_tilde = self.global_x_to_local_x     @ (_x - _x_r)
-=======
-        error   = self.global_x_r_to_local_x_r @ (_x        -     _x_r)
-        x_tilde = self.global_x_to_local_x     @ ((_x-_x_r) - self.x_e)
->>>>>>> eee90ac829101c5c863408c9a6d4cc66307b94c5
 
         if self.has_integrator:
             self.integrateError(error)
