@@ -28,6 +28,16 @@ class makeSimpleMeshes:
         transformFilter.Update()
         return transformFilter.GetOutput()
 
+    def convertSTLToVTU(self, stl_file:str, vtu_file:str):
+        # Read STL file
+        reader = vtk.vtkSTLReader()
+        reader.SetFileName(stl_file)
+
+        # Update the reader (this is necessary to load the data)
+        reader.Update()
+
+        self.exportToVtu(vtu_file, reader.GetOutput())
+
 
     def exportToVtu(self, file:str, obj):
         triangle_filter = vtk.vtkTriangleFilter()

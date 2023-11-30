@@ -4,7 +4,7 @@ import numpy as np
 import platform, os, traceback, warnings
 warnings.filterwarnings("error")
 
-
+from tools.rotations import Euler2Rotation
 import parameters.simulation_parameters as SIM
 import parameters.body_parameters       as P
 from viewers.animation                  import Animation
@@ -14,9 +14,10 @@ from dynamics.forcesMoments             import ForcesMoments
 from controller.LQR                     import LQR
 
 make_output        = 0
-show_figures       = 1
-include_animation  = 1
+show_figures       = 0
+include_animation  = 0
 include_plotter    = 0
+write_meshes       = 0
 write_data_to_file = 1
 
 if include_animation:
@@ -25,10 +26,23 @@ if include_animation:
         file         = "meshes/Body.vtu",
         scale        = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]]), 
         interactive  = show_figures,
-        write_meshes = False,
+        write_meshes = write_meshes,
         width        = SIM.fig_width,
-        height       = SIM.fig_height
+        height       = SIM.fig_height,
     )
+    
+    # animation = Animation(
+    #     file         = "meshes/starship.vtu",
+    #     scale        = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]]), 
+    #     interactive  = show_figures,
+    #     write_meshes = write_meshes,
+    #     width        = SIM.fig_width,
+    #     height       = SIM.fig_height,
+    # )
+
+# animation.update(P.initial_state)
+# plt.show(block=True)
+# exit()
 
 if include_plotter or write_data_to_file:
     plotter = DataPlotter(width = SIM.fig_width, height = SIM.fig_height, plot = include_plotter, interactive = show_figures)
@@ -40,8 +54,8 @@ if not show_figures:
 
 state      = P.initial_state.copy()
 #controller = FullStateFeedBack(compute_gains=True)
-controller = LQR(compute_gains=True)
-dynamics   = Dynamics(state,animation)
+controller = LQR(compute_gains=False)
+dynamics   = Dynamics(state)
 forces     = ForcesMoments()
 
 try:

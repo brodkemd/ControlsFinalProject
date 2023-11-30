@@ -67,6 +67,7 @@ class Animation():
         
         shift = self.R_plot @ shift
         self.centroid = shift
+        # self.centroid[2] += 78
         
         T = self.R_plot @ R # making the total transformation matrix
 
@@ -109,7 +110,7 @@ class Animation():
             )
             self.count += 1
 
-        buffer = 30
+        buffer = 50
         self.ax.set_xlim([-buffer + self.centroid[0], buffer + self.centroid[0]])
         self.ax.set_ylim([-buffer + self.centroid[1], buffer + self.centroid[1]])
         self.ax.set_zlim([-buffer + self.centroid[2], buffer + self.centroid[2]])
