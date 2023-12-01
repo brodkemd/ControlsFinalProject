@@ -54,7 +54,7 @@ if not show_figures:
 
 state      = P.initial_state.copy()
 #controller = FullStateFeedBack(compute_gains=True)
-controller = LQR(compute_gains=True)
+controller = LQR(compute_gains=False)
 dynamics   = Dynamics(state)
 forces     = ForcesMoments()
 

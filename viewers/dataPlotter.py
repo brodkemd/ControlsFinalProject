@@ -97,8 +97,9 @@ class DataPlotter:
             self.fig_dashboard.set_figheight(height/3)
             self.fig_dashboard.set_figwidth(width)
             self.fig_dashboard.tight_layout()
-            self.fig_dashboard.subplots_adjust(hspace=0.08)
-
+            self.fig_dashboard.subplots_adjust(hspace=0.1)
+            self.fig.subplots_adjust(wspace=0.06)
+            
             self.fig.set_figheight(height+self.fig_dashboard.get_figheight())
             self.fig.set_figwidth(width)
             self.fig.tight_layout()
