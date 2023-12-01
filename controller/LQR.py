@@ -4,10 +4,19 @@ from tools.rotations import Euler2Quaternion, Quaternion2Euler
 from parameters.baseClass import Base
 from tools.loadMathModule import LoadModule
 from controller.deflectioncalc import deflection_calc
-
+import sympy as sp
 import numpy as np
 import os
 
+cwd = os.path.dirname(__file__)
+def write(s, _file:str):
+    global cwd
+    if not isinstance(s, str):
+        s = sp.latex(s)
+
+
+    _file = os.path.join(cwd, _file)
+    with open(_file, "w") as file: file.write(s)
 
 class LQR(Base):
     global_u_to_total_u = None
@@ -155,13 +164,9 @@ class DescentCP(DescentStateSpaceCP, BaseFullStateFeedBack):
         BaseFullStateFeedBack.__init__(self, "descentCP")
         DescentStateSpaceCP.__init__(self)
 
-        # self.Q_diagonal = 1/(1**2)*np.ones(self.A.shape[0])
         self.Q_diagonal = np.array([1E-8,1E-6,1E-6,1E-6,1,1E8,1,1,1,1])
-        #self.Q_diagonal[0]*=1
         self.R_diagonal = 1E-6*np.ones(self.B.shape[1])
-        # self.R_diagonal = np.array([1E5,1E5,1E5,1E-5,1E-5,1E-5,1,1])
 
-        # self.computeQR()
         self.generateGains(compute_gains=compute_gains, add_integrator=add_integrator)
 
 
@@ -172,7 +177,7 @@ class FlipCP(FlipStateSpaceCP, BaseFullStateFeedBack):
 
         self.Q_diagonal = np.ones(self.A.shape[0])
         self.R_diagonal = np.ones(self.B.shape[1])
-        # self.computeQR()
+
         self.generateGains(compute_gains=compute_gains, add_integrator=add_integrator)
 
 
@@ -181,8 +186,8 @@ class Landing(LandingStateSpace, BaseFullStateFeedBack):
         BaseFullStateFeedBack.__init__(self, "landing")
         LandingStateSpace.__init__(self)
 
-        # self.Q_diagonal = 1E12/(0.1**2)*np.ones(self.A.shape[0])
         self.Q_diagonal = np.array([1E3,1E-2,1E3,1E5,1E-8,1E5,1E11,1,1,1])
         self.R_diagonal = 5E1*np.ones(self.B.shape[1])
-        # self.computeQR()
+
+
         self.generateGains(compute_gains=compute_gains, add_integrator=add_integrator)
