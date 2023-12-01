@@ -14,8 +14,8 @@ from dynamics.forcesMoments             import ForcesMoments
 from controller.LQR                     import LQR
 
 make_output        = 0
-show_figures       = 1
-include_animation  = 1
+show_figures       = 0
+include_animation  = 0
 include_plotter    = 0
 write_meshes       = 0
 write_data_to_file = 1
@@ -79,6 +79,11 @@ try:
 
         # plotting the state variables and forces with respect to time
         if include_plotter or write_data_to_file:
+            angles = np.rad2deg(angles)
+            angles = np.abs(angles + 90)
+            # angles[1] = np.abs(angles[2] + 90)
+            # angles[2] = np.abs(angles[2] + 90)
+            # angles[3] = np.abs(angles[3] + 90)
             response = [[y.item(i), x_r.item(i)] for i in range(len(y))]
             plotter.update(t, response, F_E.tolist() + angles.tolist())
 
