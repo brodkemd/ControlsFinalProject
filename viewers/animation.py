@@ -30,6 +30,9 @@ class Animation():
         self.ax.set_ylabel('North(m)')
         self.ax.set_xlabel('East(m)')
         self.ax.set_zlabel('Height(m)')
+        self.ax.set_ylim([-5000,250])
+        self.ax.set_xlim([-5250/2,5250/2])
+        self.ax.set_zlim([-50,12000])
 
         self.createObject(file, scale, shift)
 
@@ -85,8 +88,17 @@ class Animation():
         pd = _state.item(2) # position down
         e  = _state[6:10]
 
+        
+
         # draw plot elements: cart, bob, rod
         self.drawObject(pn, pe, pd, e)
+
+        self.ax.set_ylim([-1500,10])
+        self.ax.set_xlim([-5250/10,5250/10])        
+        if -pd-500 > 0:
+            self.ax.set_zlim([-pd-500,-pd+500])
+        else:
+            self.ax.set_zlim([0,1000])
 
         # Set initialization flag to False after first call
         if self.init:

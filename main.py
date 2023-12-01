@@ -14,8 +14,8 @@ from dynamics.forcesMoments             import ForcesMoments
 from controller.LQR                     import LQR
 
 make_output        = 0
-show_figures       = 0
-include_animation  = 0
+show_figures       = 1
+include_animation  = 1
 include_plotter    = 0
 write_meshes       = 0
 write_data_to_file = 1
@@ -24,7 +24,7 @@ if include_animation:
     # read mesh and oriente along x-axis, that is what the scale matrix does
     animation = Animation(
         file         = "meshes/Body.vtu",
-        scale        = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]]), 
+        scale        = 3*np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]]), 
         interactive  = show_figures,
         write_meshes = write_meshes,
         width        = SIM.fig_width,
@@ -54,7 +54,7 @@ if not show_figures:
 
 state      = P.initial_state.copy()
 #controller = FullStateFeedBack(compute_gains=True)
-controller = LQR(compute_gains=False)
+controller = LQR(compute_gains=True)
 dynamics   = Dynamics(state)
 forces     = ForcesMoments()
 
